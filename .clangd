@@ -1,0 +1,30 @@
+# Editor-only. CCS / cl2000 ignore this file.
+CompileFlags:
+  CompilationDatabase: .
+  Add:
+    - -std=gnu11
+    - -ffreestanding
+    - -fno-builtin
+    - -include
+    - .vscode/clangd_compat.h
+    - -I.
+    - -Ihardware/headers/include
+    - -Ihardware/common/include
+    - -Idriver_interface/gpio
+    - -Idriver_interface/can
+    - -Idriver_interface/queue
+    - -Idriver_interface/init
+    - -Idriver_interface/pwm
+    - -Idriver_interface/adc
+    - -Idriver_interface/spi
+    - -Idriver_interface/sci
+    - -Idriver_interface/timer
+    - -Iapplication/can_send
+    - -Iapplication/adc_test
+    - -Iapplication/gpio_test
+    - -IC:/ti/ccs1230/ccs/tools/compiler/ti-cgt-c2000_22.6.0.LTS/include
+    - -D_TMS320C28XX=1
+    - -DLARGE_MODEL=1
+    - -Wno-everything
+Diagnostics:
+  Suppress: "*"

@@ -1,0 +1,21 @@
+# Code Composer Studio build output
+Debug/
+Release/
+
+# Compiler and linker artifacts
+*.obj
+*.o
+*.d
+*.out
+*.map
+*.pp
+*.lst
+*.hex
+*.bin
+*.abs
+*.opt
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
