@@ -3,8 +3,9 @@
 #include "can_interface.h"
 #include "pwm_interface.h"
 #include "adc_interface.h"
-#include "spi_interface.h"
 #include "sci_interface.h"
+#include "i2c_interface.h"
+#include "encoder_interface.h"
 #include "timer_interface.h"
 #include "DSP28x_Project.h"
 #include <string.h>
@@ -23,12 +24,12 @@ void system_init(void)
     InitPieVectTable();
 
     gpio_init();
+    encoder_init();
     adc_init();
     pwm_init();
     can_init();
-    spi_init();
     sci_init();
-    sci_cmd_init();
+    i2c_init();
     timer_init();
 
     EINT;

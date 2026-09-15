@@ -125,3 +125,20 @@ Uint16 adc_read(adc_ch_t ch)
     }
     return 0U;
 }
+
+float adc_pin_voltage(Uint16 adc_code)
+{
+    /*
+     * Board-level ADC scale only (drive.md): 0 V .. 3 V, 12-bit.
+     * No schematic resistor divider is populated on IOUT_1 / PS_OUT /
+     * IOUT_2, so this is the voltage at the ADC pin.
+     *
+     * Sensor engineering-unit conversion is intentionally disabled
+     * until external sensors are connected and scaling is verified.
+     */
+    if (adc_code > 4095U)
+    {
+        adc_code = 4095U;
+    }
+    return ((float)adc_code * 3.0f) / 4096.0f;
+}

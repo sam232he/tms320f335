@@ -4,14 +4,15 @@
 #include "../../driver_interface/sci/sci_interface.h"
 
 /*
- * Every 200 ms queue one incrementing byte on SCI and SCI_CMD TX.
- * Pop RX queues into obs and echo via TX queue.
- * Hardware send is sci_write() in the idle loop (same as can_write).
- * sci_obs / sci_cmd_obs: [0]=last TX, [1]=last RX, [2]=TX count, [3]=RX count.
- * Watch in CCS.
+ * Every 200 ms queue one incrementing byte on SCI_A, SCI_B, and SCI_C TX.
+ * Pop RX queues into sci_*_test_data and echo via TX queue.
+ * sci_write() for A/B/C runs every call.
+ * sci_a_test_data / sci_b_test_data / sci_c_test_data:
+ *   [0]=last TX, [1]=last RX, [2]=TX count, [3]=RX count.
  */
-extern volatile Uint16 sci_obs[4];
-extern volatile Uint16 sci_cmd_obs[4];
+extern volatile Uint16 sci_a_test_data[4];
+extern volatile Uint16 sci_b_test_data[4];
+extern volatile Uint16 sci_c_test_data[4];
 
 void sci_test(void);
 

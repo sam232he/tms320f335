@@ -7,19 +7,24 @@ typedef enum
     SCI_WRITE_ST_FIND_FIFO
 } sci_write_state_t;
 
-static sci_write_state_t sci_write_state[2];
-static sci_msg_t sci_write_held[2];
-static sci_msg_t sci_q_buf[2][2][SCI_QUEUE_LEN];
-static Uint16 sci_q_head[2][2];
-static Uint16 sci_q_tail[2][2];
-static Uint16 sci_q_n[2][2];
+static sci_write_state_t sci_write_state[SCI_COUNT];
+static sci_msg_t sci_write_held[SCI_COUNT];
+static sci_msg_t sci_q_buf[SCI_COUNT][2][SCI_QUEUE_LEN];
+static Uint16 sci_q_head[SCI_COUNT][2];
+static Uint16 sci_q_tail[SCI_COUNT][2];
+static Uint16 sci_q_n[SCI_COUNT][2];
+
+static Uint16 sci_mod_ok(sci_module_t mod)
+{
+    return ((Uint16)mod < SCI_COUNT) ? 1U : 0U;
+}
 
 static Uint16 sci_q_push(sci_module_t mod, sci_dir_t dir, const sci_msg_t *msg)
 {
     Uint16 m;
     Uint16 d;
 
-    if ((msg == 0) || ((mod != SCI) && (mod != SCI_CMD)))
+    if ((msg == 0) || (sci_mod_ok(mod) == 0U))
     {
         return 0U;
     }
@@ -50,7 +55,7 @@ static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
     Uint16 m;
     Uint16 d;
 
-    if ((msg == 0) || ((mod != SCI) && (mod != SCI_CMD)))
+    if ((msg == 0) || (sci_mod_ok(mod) == 0U))
     {
         return 0U;
     }
@@ -88,28 +93,21 @@ Uint16 sci_rx(sci_module_t mod, sci_msg_t *msg)
 
 static volatile struct SCI_REGS *sci_regs(sci_module_t mod)
 {
-    if (mod == SCI_CMD)
+    switch (mod)
     {
-#if SCI_CMD_USE_SCIC
-        return &ScicRegs;
-#else
-        return &SciaRegs;
-#endif
+        case SCI_B: return &ScibRegs;
+        case SCI_C: return &ScicRegs;
+        default:    return &SciaRegs;
     }
-#if SCI_USE_SCIB
-    return &ScibRegs;
-#else
-    return &SciaRegs;
-#endif
 }
 
-static void sci_port_init(volatile struct SCI_REGS *regs, Uint16 brr_h, Uint16 brr_l)
+static void sci_port_init(volatile struct SCI_REGS *regs)
 {
     regs->SCICCR.all = 0x0007U;       /* 8 data, 1 stop, no parity, idle */
     regs->SCICTL1.all = 0x0003U;      /* RXENA + TXENA, hold SWRESET */
     regs->SCICTL2.all = 0x0000U;
-    regs->SCIHBAUD = brr_h;
-    regs->SCILBAUD = brr_l;
+    regs->SCIHBAUD = (Uint16)SCI_BRR_HIGH;
+    regs->SCILBAUD = (Uint16)SCI_BRR_LOW;
     regs->SCIFFTX.all = 0xE040U;
     regs->SCIFFRX.all = 0x2061U;      /* RXFFIL=1, RXFFIENA, RXFFINTCLR, reset */
     regs->SCIFFCT.all = 0x0000U;
@@ -140,64 +138,37 @@ static void sci_rx_to_queue(sci_module_t mod)
     regs->SCIFFRX.bit.RXFFINTCLR = 1;
 }
 
-#if !SCI_USE_SCIB || !SCI_CMD_USE_SCIC
 interrupt void sci_rx_isr_a(void)
 {
-#if !SCI_USE_SCIB
-    sci_rx_to_queue(SCI);
-#endif
-#if !SCI_CMD_USE_SCIC
-    sci_rx_to_queue(SCI_CMD);
-#endif
+    sci_rx_to_queue(SCI_A);
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
 }
-#endif
 
-#if SCI_USE_SCIB
 interrupt void sci_rx_isr_b(void)
 {
-    sci_rx_to_queue(SCI);
+    sci_rx_to_queue(SCI_B);
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
 }
-#endif
 
-#if SCI_CMD_USE_SCIC
 interrupt void sci_rx_isr_c(void)
 {
-    sci_rx_to_queue(SCI_CMD);
+    sci_rx_to_queue(SCI_C);
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP8;
 }
-#endif
 
 static void sci_rx_int_enable(void)
 {
     EALLOW;
-#if SCI_USE_SCIB
+    PieVectTable.SCIRXINTA = &sci_rx_isr_a;
     PieVectTable.SCIRXINTB = &sci_rx_isr_b;
-#else
-    PieVectTable.SCIRXINTA = &sci_rx_isr_a;
-#endif
-#if SCI_CMD_USE_SCIC
     PieVectTable.SCIRXINTC = &sci_rx_isr_c;
-#else
-    PieVectTable.SCIRXINTA = &sci_rx_isr_a;
-#endif
     EDIS;
 
-#if SCI_USE_SCIB
+    PieCtrlRegs.PIEIER9.bit.INTx1 = 1;   /* SCIRXINTA */
     PieCtrlRegs.PIEIER9.bit.INTx3 = 1;   /* SCIRXINTB */
-#else
-    PieCtrlRegs.PIEIER9.bit.INTx1 = 1;   /* SCIRXINTA */
-#endif
-#if SCI_CMD_USE_SCIC
     PieCtrlRegs.PIEIER8.bit.INTx5 = 1;   /* SCIRXINTC */
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP8;
-    IER |= M_INT8;
-#else
-    PieCtrlRegs.PIEIER9.bit.INTx1 = 1;   /* SCIRXINTA */
-#endif
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
-    IER |= M_INT9;
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP8 | PIEACK_GROUP9;
+    IER |= (M_INT8 | M_INT9);
 }
 
 static Uint16 sci_tx_fifo_free(sci_module_t mod)
@@ -224,7 +195,7 @@ void sci_write(sci_module_t mod)
 {
     Uint16 m;
 
-    if ((mod != SCI) && (mod != SCI_CMD))
+    if (sci_mod_ok(mod) == 0U)
     {
         return;
     }
@@ -255,16 +226,16 @@ void sci_write(sci_module_t mod)
 
 void sci_init(void)
 {
-    sci_port_init(sci_regs(SCI), (Uint16)SCI_BRR_HIGH, (Uint16)SCI_BRR_LOW);
+    Uint16 i;
 
-    sci_write_state[SCI] = SCI_WRITE_ST_CHECK_QUEUE;
-}
+    sci_port_init(&SciaRegs);
+    sci_port_init(&ScibRegs);
+    sci_port_init(&ScicRegs);
 
-void sci_cmd_init(void)
-{
-    sci_port_init(sci_regs(SCI_CMD), (Uint16)SCI_CMD_BRR_HIGH, (Uint16)SCI_CMD_BRR_LOW);
-
-    sci_write_state[SCI_CMD] = SCI_WRITE_ST_CHECK_QUEUE;
+    for (i = 0U; i < SCI_COUNT; i++)
+    {
+        sci_write_state[i] = SCI_WRITE_ST_CHECK_QUEUE;
+    }
 
     sci_rx_int_enable();
 }

@@ -2,6 +2,7 @@
 #define PWM_INTERFACE_H
 
 #include "clock_config.h"
+#include "board_pins.h"
 #include "DSP2833x_Device.h"
 #include "DSP2833x_EPwm_defines.h"
 
@@ -18,11 +19,20 @@ typedef enum
 /*
  * Generic ePWM driver. Pin mux is in gpio_interface.
  *
+ * Schematic motor PWM (drive.md):
+ *   DSP_EPWM1_A/B = GPIO10/11 = EPWM6A/B  (DRV PWM_A/B)
+ *   DSP_EPWM2_A/B = GPIO9/8   = EPWM5B/A  (DRV PWM_C/D)
+ *
+ * Complementary polarity so schematic *A is active-high PWM:
+ *   ePWM6 HIC: EPWM6A (DSP_EPWM1_A) active, EPWM6B complementary
+ *   ePWM5 LOC: EPWM5B (DSP_EPWM2_A) active, EPWM5A complementary
+ *
  * TBCLK = SYSCLKOUT / (HSP_FACTOR * CLK_FACTOR)
  * Up-count:  f = TBCLK / (TBPRD + 1)
  * Up-down:   f = TBCLK / (2 * TBPRD)
  *
- * GPIO0 mux1 = EPWM1A ... GPIO10 mux1 = EPWM6A (GPIO8/10 also CAN-B).
+ * PWM_OUTPUT_ENABLE = 1: GPIO8..11 mux to EPWM5/6 (schematic motor PWM).
+ * RST_AB stays low so the DRV8432 power stage stays Hi-Z.
  */
 
 #define PWM_FREQ_HZ                 20000UL
@@ -48,7 +58,7 @@ typedef enum
 #define PWM_DB_IN_MODE              DBA_ALL
 #define PWM_DB_NS                   1000UL
 
-#define PWM1_ENABLE                 1U
+#define PWM1_ENABLE                 0U
 #define PWM1_MASTER                 1U
 #define PWM1_COMPLEMENTARY          0U
 #define PWM1_PHS                    0U
@@ -57,7 +67,7 @@ typedef enum
 #define PWM1_SOCASEL                ET_CTR_ZERO
 #define PWM1_SOCAPRD                ET_1ST
 
-#define PWM2_ENABLE                 1U
+#define PWM2_ENABLE                 0U
 #define PWM2_MASTER                 0U
 #define PWM2_COMPLEMENTARY          0U
 #define PWM2_PHS                    0U
@@ -66,7 +76,7 @@ typedef enum
 #define PWM2_SOCASEL                ET_CTR_ZERO
 #define PWM2_SOCAPRD                ET_1ST
 
-#define PWM3_ENABLE                 1U
+#define PWM3_ENABLE                 0U
 #define PWM3_MASTER                 0U
 #define PWM3_COMPLEMENTARY          0U
 #define PWM3_PHS                    0U
@@ -75,7 +85,7 @@ typedef enum
 #define PWM3_SOCASEL                ET_CTR_ZERO
 #define PWM3_SOCAPRD                ET_1ST
 
-#define PWM4_ENABLE                 1U
+#define PWM4_ENABLE                 0U
 #define PWM4_MASTER                 0U
 #define PWM4_COMPLEMENTARY          0U
 #define PWM4_PHS                    0U
@@ -84,18 +94,20 @@ typedef enum
 #define PWM4_SOCASEL                ET_CTR_ZERO
 #define PWM4_SOCAPRD                ET_1ST
 
-#define PWM5_ENABLE                 1U      /* ADC SOCA timer; no GPIO (CAN-B uses GPIO8) */
-#define PWM5_MASTER                 0U
-#define PWM5_COMPLEMENTARY          0U
+#define PWM5_ENABLE                 1U      /* DSP_EPWM2: GPIO9 EPWM5B = 2A, GPIO8 EPWM5A = 2B + ADC SOCA */
+#define PWM5_MASTER                 1U
+#define PWM5_COMPLEMENTARY          1U
+#define PWM5_DB_POLSEL              DB_ACTV_LOC  /* 2A (EPWM5B) active-high, 2B complementary */
 #define PWM5_PHS                    0U
 #define PWM5_PHSDIR                 TB_UP
 #define PWM5_SOCA_ENABLE            1U
 #define PWM5_SOCASEL                ET_CTR_ZERO
 #define PWM5_SOCAPRD                ET_1ST
 
-#define PWM6_ENABLE                 0U
+#define PWM6_ENABLE                 1U      /* DSP_EPWM1: GPIO10 EPWM6A, GPIO11 EPWM6B */
 #define PWM6_MASTER                 0U
-#define PWM6_COMPLEMENTARY          0U
+#define PWM6_COMPLEMENTARY          1U
+#define PWM6_DB_POLSEL              DB_ACTV_HIC  /* 1A (EPWM6A) active-high, 1B complementary */
 #define PWM6_PHS                    0U
 #define PWM6_PHSDIR                 TB_UP
 #define PWM6_SOCA_ENABLE            0U

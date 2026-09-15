@@ -12,6 +12,24 @@
  * Add a channel by appending to ADC_SLOT_LIST (conversion order).
  * adc_read() takes the pin (ADC_CH_A0), not a slot index.
  *
+ * Schematic ADC (drive.md). TMS320F28335 range is 0 V to 3 V:
+ *   adc_v = adc_code * 3.0 / 4096.0
+ * No populated resistor divider is shown on these nets, so firmware
+ * reports raw counts and ADC pin voltage only.
+ *
+ *   DSP_ADCINA0 / pin 42 / ADCINA0 = IOUT_1  (current sensor 1 net)
+ *       direct ADC pin voltage only; no populated divider
+ *   DSP_ADCINA1 / pin 41 / ADCINA1 = PS_OUT  (pressure sensor net)
+ *       direct ADC pin voltage only; no populated divider
+ *   DSP_ADCINB0 / pin 46 / ADCINB0 = IOUT_2  (current sensor 2 net)
+ *       direct ADC pin voltage only; no populated divider
+ *
+ * Sensor engineering-unit conversion (ACS711 current, MPXHZ6400 pressure)
+ * is intentionally disabled until external sensors are connected and
+ * scaling is verified. Do not apply datasheet transfer functions here.
+ *
+ * Open / missing sensor nets are not fatal for board-only testing.
+ *
  * Clocks (150 MHz SYSCLKOUT):
  *   ADC_HISPCP  -> HSPCLK = SYSCLKOUT / (2 * ADC_HISPCP) = 25 MHz  (chip max)
  *   ADC_ADCCLKPS -> ADCCLK = HSPCLK / (2 * ADC_ADCCLKPS) when != 0
@@ -49,9 +67,10 @@ typedef enum
 #define ADC_ADCCLKPS                1U      /* HSPCLK/2 = 12.5 MHz ADCCLK; leave at 1 */
 #define ADC_ACQ_PS                  15U     /* 16 ADCCLK sample window (~1.28 us); leave at 15 */
 
-#define ADC_SLOT_LIST               ADC_CH_A0, ADC_CH_A1
+#define ADC_SLOT_LIST               ADC_CH_A0, ADC_CH_A1, ADC_CH_B0
 
 void adc_init(void);
 Uint16 adc_read(adc_ch_t ch);           /* last 12-bit result, 0 .. 4095 */
+float adc_pin_voltage(Uint16 adc_code); /* adc_v = adc_code * 3.0 / 4096.0 */
 
 #endif /* ADC_INTERFACE_H */

@@ -14,15 +14,13 @@ typedef struct
 /* Staggered start so each pin has a different duty at any instant. */
 static pwm_test_ch_t pwm_test_ch[] =
 {
-    { PWM_1,  0U, 1U },
-    { PWM_2, 25U, 1U },
-    { PWM_3, 50U, 0U },
-    { PWM_4, 75U, 0U }
+    { PWM_6,  0U, 1U }, /* DSP_EPWM1_A/B = EPWM6A/B, GPIO10/11 */
+    { PWM_5, 50U, 0U }  /* DSP_EPWM2_A/B = EPWM5B/A, GPIO9/8   */
 };
 
 static Uint32 pwm_test_last_tick;
 
-volatile Uint16 pwm_obs[7];
+volatile Uint16 pwm_test_duty[7];
 
 static void pwm_test_advance(pwm_test_ch_t *ch)
 {
@@ -66,7 +64,7 @@ void pwm_test(void)
     for (i = 0U; i < n; i++)
     {
         pwm_set_duty(pwm_test_ch[i].mod, pwm_test_ch[i].duty);
-        pwm_obs[pwm_test_ch[i].mod] = pwm_test_ch[i].duty;
+        pwm_test_duty[pwm_test_ch[i].mod] = pwm_test_ch[i].duty;
         pwm_test_advance(&pwm_test_ch[i]);
     }
 }
