@@ -55,6 +55,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/i2c"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
@@ -152,6 +153,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/i2c"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
