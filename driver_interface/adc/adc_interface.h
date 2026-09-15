@@ -30,11 +30,11 @@
  *
  * Open / missing sensor nets are not fatal for board-only testing.
  *
- * Clocks (150 MHz SYSCLKOUT):
- *   ADC_HISPCP  -> HSPCLK = SYSCLKOUT / (2 * ADC_HISPCP) = 25 MHz  (chip max)
+ * Clocks (125 MHz SYSCLKOUT from 25 MHz crystal):
+ *   ADC_HISPCP  -> HSPCLK = SYSCLKOUT / (2 * ADC_HISPCP) <= 25 MHz (chip max)
+ *                  125 MHz -> HISPCP=3 -> 20.83 MHz
  *   ADC_ADCCLKPS -> ADCCLK = HSPCLK / (2 * ADC_ADCCLKPS) when != 0
- *                  1 -> 12.5 MHz (80 ns/tick). TI SOC example rate. Do not
- *                  raise ADCCLK above 25 MHz.
+ *                  1 -> HSPCLK/2. Do not raise ADCCLK above 25 MHz.
  *   ADC_ACQ_PS  -> sample window = (ADC_ACQ_PS + 1) ADCCLK ticks
  *                  15 -> 16 ticks = 1.28 us, then ~13 ticks convert (~1.04 us)
  *                  ~2.3 us per pin. Leave at 15 for bring-up.
@@ -63,8 +63,8 @@ typedef enum
     ADC_CH_B7 = 15
 } adc_ch_t;
 
-#define ADC_HISPCP                  ((SYSCLK_MHZ + 49U) / 50U)  /* 150 MHz -> 3 -> 25 MHz HSPCLK */
-#define ADC_ADCCLKPS                1U      /* HSPCLK/2 = 12.5 MHz ADCCLK; leave at 1 */
+#define ADC_HISPCP                  ((SYSCLK_MHZ + 49U) / 50U)  /* 125 MHz -> 3 -> 20.83 MHz HSPCLK */
+#define ADC_ADCCLKPS                1U      /* HSPCLK/2 ADCCLK; leave at 1 */
 #define ADC_ACQ_PS                  15U     /* 16 ADCCLK sample window (~1.28 us); leave at 15 */
 
 #define ADC_SLOT_LIST               ADC_CH_A0, ADC_CH_A1, ADC_CH_B0

@@ -10,16 +10,19 @@
 #endif
 
 /*
- * Board clock. Change XTAL_MHZ to match the crystal on X1/X2.
+ * Board clock. XTAL_MHZ is the crystal on X1/X2 (drive.pdf Y1 = 25 MHz).
  *
  * SYSCLKOUT = XTAL_MHZ * PLL_CR / PLL_CLKDIV
  * F28335 maximum SYSCLKOUT is 150 MHz.
  *
- * Common setups:
+ * PLL DIVSEL=/1 is only legal in PLL bypass, so 150 MHz is not reachable
+ * from 25 MHz. Max with PLL on is 25 * 10 / 2 = 125 MHz.
+ *
+ *   25 MHz crystal, PLL_CR=10, PLL_DIVSEL=2  ->  125 MHz
  *   30 MHz crystal, PLL_CR=10, PLL_DIVSEL=2  ->  150 MHz
  *   20 MHz crystal, PLL_CR=10, PLL_DIVSEL=2  ->  100 MHz
  */
-#define XTAL_MHZ        30U
+#define XTAL_MHZ        25U
 
 /* PLLCR.DIV: 0 = PLL bypass, 1..10 = multiply OSCCLK. */
 #define PLL_CR          10U
@@ -50,6 +53,7 @@
 #define DSP28_DIVSEL    PLL_DIVSEL
 #define CPU_RATE        (1000.0L / (long double)SYSCLK_MHZ)
 
+/* Flash wait states: 125 MHz uses the 150 MHz (5-wait) set. Conservative. */
 #if (SYSCLK_MHZ > 120U)
 #define CPU_FRQ_150MHZ  1
 #define CPU_FRQ_100MHZ  0

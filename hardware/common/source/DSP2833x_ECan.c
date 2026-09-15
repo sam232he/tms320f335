@@ -55,23 +55,27 @@ static void InitECanModule(volatile struct ECAN_REGS *regs,
     } while (shadow.CANES.bit.CCE != 1);
 
     /*
-     * CAN clock is SYSCLKOUT/2 (TI comment in DSP2833x_ECan.c).
-     * 500 kbit/s uses the same 15 tq as TI's 1 Mbit/s example, BRP doubled.
-     *   150 MHz SYSCLK -> 75 MHz CAN: BRPREG=9, TSEG1=10, TSEG2=2
-     *       75e6 / (10 * 15) = 500 kbit/s
-     *   100 MHz SYSCLK -> 50 MHz CAN: BRPREG=9, TSEG1=6, TSEG2=1
-     *       50e6 / (10 * 10) = 500 kbit/s
+     * CAN clock is SYSCLKOUT/2. 500 kbit/s.
+     * Ntq = (TSEG1REG+1) + (TSEG2REG+1) + 1 sync.
+     *   150 MHz -> 75 MHz CAN: BRP=10, 15 tq  ->  75e6 / (10 * 15) = 500 k
+     *   125 MHz -> 62.5 MHz CAN: BRP=5, 25 tq ->  62.5e6 / (5 * 25) = 500 k
+     *   100 MHz -> 50 MHz CAN: BRP=10, 10 tq  ->  50e6 / (10 * 10) = 500 k
      */
     shadow.CANBTC.all = 0UL;
-#if (CPU_FRQ_150MHZ)
+#if (SYSCLK_MHZ == 150U)
     shadow.CANBTC.bit.BRPREG = 9;
     shadow.CANBTC.bit.TSEG2REG = 2;
     shadow.CANBTC.bit.TSEG1REG = 10;
-#endif
-#if (CPU_FRQ_100MHZ)
+#elif (SYSCLK_MHZ == 125U)
+    shadow.CANBTC.bit.BRPREG = 4;
+    shadow.CANBTC.bit.TSEG2REG = 7;
+    shadow.CANBTC.bit.TSEG1REG = 15;
+#elif (SYSCLK_MHZ == 100U)
     shadow.CANBTC.bit.BRPREG = 9;
     shadow.CANBTC.bit.TSEG2REG = 1;
     shadow.CANBTC.bit.TSEG1REG = 6;
+#else
+#error "No 500 kbit/s CANBTC for this SYSCLK_MHZ."
 #endif
     shadow.CANBTC.bit.SAM = 1;
     regs->CANBTC.all = shadow.CANBTC.all;

@@ -9,7 +9,7 @@
  * ISR increments timer_tick() once per period.
  *
  * PRD = SYSCLK_MHZ * TIMER_PERIOD_US
- * 150 MHz, 1000 us -> 150,000 clocks = 1 ms.
+ * 125 MHz, 1000 us -> 125,000 clocks = 1 ms.
  */
 
 #define TIMER_PERIOD_US             1000UL      /* 1 ms */
