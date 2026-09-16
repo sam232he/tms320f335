@@ -77,7 +77,14 @@ static void InitECanModule(volatile struct ECAN_REGS *regs,
 #else
 #error "No 500 kbit/s CANBTC for this SYSCLK_MHZ."
 #endif
-    shadow.CANBTC.bit.SAM = 1;
+    /*
+     * SPRUEU1 / SPRU074 CANBTC.SAM: triple-sample only if BRP > 4
+     * (BRP = BRPREG+1). 500 kbit/s tables here are BRP 10, 5, 10.
+     */
+    if ((shadow.CANBTC.bit.BRPREG + 1U) > 4U)
+    {
+        shadow.CANBTC.bit.SAM = 1;
+    }
     regs->CANBTC.all = shadow.CANBTC.all;
 
     shadow.CANMC.all = regs->CANMC.all;

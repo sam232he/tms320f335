@@ -5,6 +5,7 @@
 #include "adc_interface.h"
 #include "sci_interface.h"
 #include "i2c_interface.h"
+#include "eeprom_interface.h"
 #include "encoder_interface.h"
 #include "timer_interface.h"
 #include "DSP28x_Project.h"
@@ -30,6 +31,7 @@ void system_init(void)
     can_init();
     sci_init();
     i2c_init();
+    eeprom_init();
     timer_init();
 
     EINT;

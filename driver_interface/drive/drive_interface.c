@@ -28,6 +28,11 @@ Uint16 drive_disable(Uint16 motor)
     return 1U;
 }
 
+/*
+ *  ~50% is near-zero voltage. 0 and 100 are
+ * opposite full DC, not coast/stop. If motor_app uses 0 as off, the
+ * motor slams reverse as soon as reset is released.
+ */
 void drive_set_duty(Uint16 motor, Uint16 duty)
 {
     if (motor == DRIVE_1)

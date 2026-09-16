@@ -10,9 +10,9 @@ typedef enum
 static sci_write_state_t sci_write_state[SCI_COUNT];
 static sci_msg_t sci_write_held[SCI_COUNT];
 static sci_msg_t sci_q_buf[SCI_COUNT][2][SCI_QUEUE_LEN];
-static Uint16 sci_q_head[SCI_COUNT][2];
-static Uint16 sci_q_tail[SCI_COUNT][2];
-static Uint16 sci_q_n[SCI_COUNT][2];
+static volatile Uint16 sci_q_head[SCI_COUNT][2];
+static volatile Uint16 sci_q_tail[SCI_COUNT][2];
+static volatile Uint16 sci_q_n[SCI_COUNT][2];
 
 static Uint16 sci_mod_ok(sci_module_t mod)
 {
@@ -54,6 +54,8 @@ static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
 {
     Uint16 m;
     Uint16 d;
+    Uint16 lock;
+    Uint16 ok;
 
     if ((msg == 0) || (sci_mod_ok(mod) == 0U))
     {
@@ -66,19 +68,34 @@ static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
 
     m = (Uint16)mod;
     d = (Uint16)dir;
-    if (sci_q_n[m][d] == 0U)
+    /* RX: ISR push vs main pop. Do not EINT in sci_q_push (RX ISR). */
+    lock = (d == (Uint16)SCI_RX) ? 1U : 0U;
+    if (lock != 0U)
     {
-        return 0U;
+        DINT;
     }
 
-    *msg = sci_q_buf[m][d][sci_q_tail[m][d]];
-    sci_q_tail[m][d]++;
-    if (sci_q_tail[m][d] >= SCI_QUEUE_LEN)
+    if (sci_q_n[m][d] == 0U)
     {
-        sci_q_tail[m][d] = 0U;
+        ok = 0U;
     }
-    sci_q_n[m][d]--;
-    return 1U;
+    else
+    {
+        *msg = sci_q_buf[m][d][sci_q_tail[m][d]];
+        sci_q_tail[m][d]++;
+        if (sci_q_tail[m][d] >= SCI_QUEUE_LEN)
+        {
+            sci_q_tail[m][d] = 0U;
+        }
+        sci_q_n[m][d]--;
+        ok = 1U;
+    }
+
+    if (lock != 0U)
+    {
+        EINT;
+    }
+    return ok;
 }
 
 Uint16 sci_tx(sci_module_t mod, const sci_msg_t *msg)
@@ -114,28 +131,57 @@ static void sci_port_init(volatile struct SCI_REGS *regs)
     regs->SCIPRI.bit.FREE = 1;
     regs->SCIPRI.bit.SOFT = 0;
 
-    regs->SCICTL1.all = 0x0023U;      /* release SWRESET */
+    regs->SCICTL1.all = 0x0063U;      /* SWRESET + RXERRINTENA */
     regs->SCIFFTX.bit.TXFIFOXRESET = 1;
     regs->SCIFFRX.bit.RXFIFORESET = 1;
+}
+
+/* SPRUFZ5: BRKDT (and latched RXERROR) clear only via SWRESET. FIFO
+ * pointers are not restored; pulse TX/RX FIFO reset after. */
+static void sci_rx_recover(volatile struct SCI_REGS *regs)
+{
+    regs->SCICTL1.all = 0x0003U;      /* SWRESET=0, RX/TX still selected */
+    regs->SCIFFTX.bit.TXFIFOXRESET = 0;
+    regs->SCIFFRX.bit.RXFIFORESET = 0;
+    regs->SCIFFTX.bit.TXFIFOXRESET = 1;
+    regs->SCIFFRX.bit.RXFIFORESET = 1;
+    regs->SCICTL1.all = 0x0063U;      /* SWRESET + RXERRINTENA */
+    regs->SCIFFRX.bit.RXFFOVRCLR = 1;
+    regs->SCIFFRX.bit.RXFFINTCLR = 1;
 }
 
 /*
  * Drain the hardware RX FIFO into the software RX queue.
  * Always empty the FIFO even if the queue is full.
+ * Framing/parity FIFO bytes are dropped. BRKDT/RXERROR need SWRESET
+ * or this port stops receiving until a device reset (SPRUFZ5).
  */
 static void sci_rx_to_queue(sci_module_t mod)
 {
     volatile struct SCI_REGS *regs;
     sci_msg_t msg;
+    Uint16 raw;
 
     regs = sci_regs(mod);
     while (regs->SCIFFRX.bit.RXFFST != 0U)
     {
-        msg.data = (Uint16)(regs->SCIRXBUF.all & 0xFFU);
+        raw = regs->SCIRXBUF.all;
+        if ((raw & 0xC000U) != 0U)    /* SCIFFFE | SCIFFPE */
+        {
+            continue;
+        }
+        msg.data = raw & 0xFFU;
         (void)sci_q_push(mod, SCI_RX, &msg);
     }
-    regs->SCIFFRX.bit.RXFFOVRCLR = 1;
-    regs->SCIFFRX.bit.RXFFINTCLR = 1;
+    if (regs->SCIRXST.bit.RXERROR != 0U)
+    {
+        sci_rx_recover(regs);
+    }
+    else
+    {
+        regs->SCIFFRX.bit.RXFFOVRCLR = 1;
+        regs->SCIFFRX.bit.RXFFINTCLR = 1;
+    }
 }
 
 interrupt void sci_rx_isr_a(void)

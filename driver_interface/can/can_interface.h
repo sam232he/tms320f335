@@ -56,6 +56,7 @@ void can_mbox_config(const can_mbox_cfg_t *cfg);
  * Idle-loop TX: one step per call.
  * CHECK_QUEUE pops into can_write_held. The next call is FIND_MBOX
  * and retries until a mailbox 0..9 is free, then returns to CHECK_QUEUE.
+ * CANES.BO: abort TRS, no TX until bus-on (ABO, or CCR clear if ABO=0).
  */
 void can_write(can_module_t mod);
 

@@ -34,9 +34,9 @@ Uint32 encoder_read_counts(Uint16 enc)
     for (i = 0U; i < ENC_BIT_COUNT; i++)
     {
         gpio_write(clk_pin, 0U);
-        DELAY_US(1);
+        DELAY_US(ENC_CLK_HALF_US);
         gpio_write(clk_pin, 1U);
-        DELAY_US(1);
+        DELAY_US(ENC_CLK_HALF_US);
         counts = (counts << 1) | (Uint32)gpio_read(data_pin);
     }
 

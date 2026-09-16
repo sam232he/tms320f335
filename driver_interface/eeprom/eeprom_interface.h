@@ -23,7 +23,7 @@
  * refuses that case so I2C NACK retry is not treated as tWR busy.
  *
  * tWR (5 ms max) is handled by i2c_write() NACK retry. No delay here.
- * Idle pump stays i2c_write(I2C_A). Not called from system_init/main.
+ * Idle pump stays i2c_write(I2C_A). eeprom_init() is called from system_init.
  *
  * onsemi ECC: writes in multiples of 4 bytes get full endurance.
  * Not enforced.

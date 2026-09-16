@@ -26,6 +26,7 @@ typedef enum
 
 static volatile Uint16 i2c_xfer_st;
 static volatile Uint16 i2c_nack_n;
+static volatile Uint16 i2c_nack_hit;  /* ARDY saw NACK; SCD must not treat as success */
 static i2c_msg_t i2c_held;
 static i2c_msg_t i2c_cmd_buf[I2C_QUEUE_LEN];
 static Uint16 i2c_cmd_head;
@@ -145,6 +146,19 @@ Uint16 i2c_idle(void)
     return (i2c_xfer_st == (Uint16)I2C_XFER_IDLE) ? 1U : 0U;
 }
 
+Uint16 i2c_pending(void)
+{
+    if (i2c_xfer_st != (Uint16)I2C_XFER_IDLE)
+    {
+        return 1U;
+    }
+    if (i2c_cmd_n != 0U)
+    {
+        return 1U;
+    }
+    return 0U;
+}
+
 static Uint16 i2c_hw_ready(Uint16 check_bb)
 {
     if (I2caRegs.I2CMDR.bit.STP == 1U)
@@ -158,6 +172,15 @@ static Uint16 i2c_hw_ready(Uint16 check_bb)
     return 1U;
 }
 
+static void i2c_fifo_reset(void)
+{
+    I2caRegs.I2CFFTX.bit.TXFFRST = 0;
+    I2caRegs.I2CFFRX.bit.RXFFRST = 0;
+    I2caRegs.I2CFFTX.bit.TXFFRST = 1;
+    I2caRegs.I2CFFRX.bit.RXFFRST = 1;
+    I2caRegs.I2CFFRX.bit.RXFFINTCLR = 1;
+}
+
 static Uint16 i2c_hw_start_write(void)
 {
     Uint16 i;
@@ -167,6 +190,7 @@ static Uint16 i2c_hw_start_write(void)
         return 0U;
     }
 
+    i2c_fifo_reset();
     I2caRegs.I2CSAR = i2c_held.slave;
     I2caRegs.I2CCNT = (Uint16)(i2c_held.n + 2U);
     I2caRegs.I2CDXR = (i2c_held.mem_addr >> 8) & 0xFFU;
@@ -186,6 +210,7 @@ static Uint16 i2c_hw_start_addr(void)
         return 0U;
     }
 
+    i2c_fifo_reset();
     I2caRegs.I2CSAR = i2c_held.slave;
     I2caRegs.I2CCNT = 2U;
     I2caRegs.I2CDXR = (i2c_held.mem_addr >> 8) & 0xFFU;
@@ -223,6 +248,7 @@ static void i2c_fail_or_retry(void)
 static void i2c_start_held(void)
 {
     DINT;
+    i2c_nack_hit = 0U;
     if (i2c_held.dir == I2C_TX)
     {
         if (i2c_hw_start_write() != 0U)
@@ -287,34 +313,59 @@ interrupt void i2c_int1a_isr(void)
 {
     Uint16 src;
     Uint16 i;
+    Uint16 nacked;
 
     src = I2caRegs.I2CISRC.bit.INTCODE;
 
     if (src == I2C_SCD_ISRC)
     {
+        nacked = i2c_nack_hit;
+        i2c_nack_hit = 0U;
+        if (I2caRegs.I2CSTR.bit.NACK == 1U)
+        {
+            nacked = 1U;
+            I2caRegs.I2CSTR.all = I2C_CLR_NACK_BIT;
+        }
+
         if (i2c_xfer_st == (Uint16)I2C_XFER_WRITE_BUSY)
         {
-            i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+            if (nacked != 0U)
+            {
+                i2c_fail_or_retry();
+            }
+            else
+            {
+                i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+            }
         }
         else if (i2c_xfer_st == (Uint16)I2C_XFER_ADDR_BUSY)
         {
-            /* NACK during address setup commanded a stop. Retry later. */
+            /* Stop here only after ARDY NACK commanded STP. Retry later. */
             i2c_fail_or_retry();
         }
         else if (i2c_xfer_st == (Uint16)I2C_XFER_READ_BUSY)
         {
-            for (i = 0U; i < i2c_held.n; i++)
+            if ((nacked != 0U) ||
+                (I2caRegs.I2CFFRX.bit.RXFFST < i2c_held.n))
             {
-                i2c_held.data[i] = I2caRegs.I2CDRR & 0xFFU;
+                i2c_fail_or_retry();
             }
-            (void)i2c_rx_push(&i2c_held);
-            i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+            else
+            {
+                for (i = 0U; i < i2c_held.n; i++)
+                {
+                    i2c_held.data[i] = I2caRegs.I2CDRR & 0xFFU;
+                }
+                (void)i2c_rx_push(&i2c_held);
+                i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+            }
         }
     }
     else if (src == I2C_ARDY_ISRC)
     {
         if (I2caRegs.I2CSTR.bit.NACK == 1U)
         {
+            i2c_nack_hit = 1U;
             I2caRegs.I2CMDR.bit.STP = 1;
             I2caRegs.I2CSTR.all = I2C_CLR_NACK_BIT;
         }
@@ -342,6 +393,7 @@ void i2c_init(void)
 {
     i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
     i2c_nack_n = 0U;
+    i2c_nack_hit = 0U;
 
     /* I2CPSC / I2CCLKx must be written while IRS=0. */
     I2caRegs.I2CMDR.all = 0U;

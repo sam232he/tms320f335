@@ -10,9 +10,10 @@ typedef enum
 static can_write_state_t can_write_state[2];
 static can_msg_t can_write_held[2];
 static can_msg_t can_q_buf[2][2][CAN_QUEUE_LEN];
-static Uint16 can_q_head[2][2];
-static Uint16 can_q_tail[2][2];
-static Uint16 can_q_n[2][2];
+static volatile Uint16 can_q_head[2][2];
+static volatile Uint16 can_q_tail[2][2];
+static volatile Uint16 can_q_n[2][2];
+static Uint16 can_bo_hold[2];   /* 1 = this bus-off episode; skip TX */
 
 static Uint16 can_q_push(can_module_t mod, can_dir_t dir, const can_msg_t *msg)
 {
@@ -49,6 +50,8 @@ static Uint16 can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
 {
     Uint16 m;
     Uint16 d;
+    Uint16 lock;
+    Uint16 ok;
 
     if ((msg == 0) || ((mod != CAN_A) && (mod != CAN_B)))
     {
@@ -61,19 +64,34 @@ static Uint16 can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
 
     m = (Uint16)mod;
     d = (Uint16)dir;
-    if (can_q_n[m][d] == 0U)
+    /* RX: ISR push vs main pop. Do not EINT in can_q_push (RX ISR). */
+    lock = (d == (Uint16)CAN_RX) ? 1U : 0U;
+    if (lock != 0U)
     {
-        return 0U;
+        DINT;
     }
 
-    *msg = can_q_buf[m][d][can_q_tail[m][d]];
-    can_q_tail[m][d]++;
-    if (can_q_tail[m][d] >= CAN_QUEUE_LEN)
+    if (can_q_n[m][d] == 0U)
     {
-        can_q_tail[m][d] = 0U;
+        ok = 0U;
     }
-    can_q_n[m][d]--;
-    return 1U;
+    else
+    {
+        *msg = can_q_buf[m][d][can_q_tail[m][d]];
+        can_q_tail[m][d]++;
+        if (can_q_tail[m][d] >= CAN_QUEUE_LEN)
+        {
+            can_q_tail[m][d] = 0U;
+        }
+        can_q_n[m][d]--;
+        ok = 1U;
+    }
+
+    if (lock != 0U)
+    {
+        EINT;
+    }
+    return ok;
 }
 
 Uint16 can_tx(can_module_t mod, const can_msg_t *msg)
@@ -397,6 +415,47 @@ static Uint16 can_write_try_mbox(can_module_t mod, Uint16 m)
     return 0U;
 }
 
+/*
+ * SPRUEU1: bus-off when CANTEC hits 256. No RX/TX until bus-on.
+ * ABO recovers after 128 * 11 recessive bits. If ABO is 0, CCR is set
+ * on BO and must be cleared after the same 128 * 11 (CANREC counts them).
+ */
+static void can_busoff_step(can_module_t mod)
+{
+    volatile struct ECAN_REGS *regs;
+    struct ECAN_REGS shadow;
+    Uint16 m;
+
+    m = (Uint16)mod;
+    regs = can_regs(mod);
+    shadow.CANES.all = regs->CANES.all;
+    if (shadow.CANES.bit.BO == 0U)
+    {
+        can_bo_hold[m] = 0U;
+        return;
+    }
+
+    if (can_bo_hold[m] == 0U)
+    {
+        regs->CANTRR.all = 0xFFFFFFFFUL;
+        regs->CANTA.all = 0xFFFFFFFFUL;
+        shadow.CANGIF0.all = 0UL;
+        shadow.CANGIF0.bit.BOIF0 = 1;
+        regs->CANGIF0.all = shadow.CANGIF0.all;
+        can_bo_hold[m] = 1U;
+    }
+
+    shadow.CANMC.all = regs->CANMC.all;
+    if ((shadow.CANMC.bit.ABO == 0U) && (regs->CANREC.bit.REC >= 128U))
+    {
+        EALLOW;
+        shadow.CANMC.all = regs->CANMC.all;
+        shadow.CANMC.bit.CCR = 0;
+        regs->CANMC.all = shadow.CANMC.all;
+        EDIS;
+    }
+}
+
 void can_write(can_module_t mod)
 {
     Uint16 m;
@@ -406,6 +465,12 @@ void can_write(can_module_t mod)
         return;
     }
     m = (Uint16)mod;
+
+    can_busoff_step(mod);
+    if (can_bo_hold[m] != 0U)
+    {
+        return;
+    }
 
     switch (can_write_state[m])
     {
@@ -465,10 +530,24 @@ static void can_tx_mbox_init(void)
 
 void can_init(void)
 {
+    struct ECAN_REGS shadow;
+
     InitECan();
+
+    /* SPRUEU1: ABO bus-on after 128 * 11 recessive bits. EALLOW. */
+    EALLOW;
+    shadow.CANMC.all = ECanaRegs.CANMC.all;
+    shadow.CANMC.bit.ABO = 1;
+    ECanaRegs.CANMC.all = shadow.CANMC.all;
+    shadow.CANMC.all = ECanbRegs.CANMC.all;
+    shadow.CANMC.bit.ABO = 1;
+    ECanbRegs.CANMC.all = shadow.CANMC.all;
+    EDIS;
 
     can_write_state[CAN_A] = CAN_WRITE_ST_CHECK_QUEUE;
     can_write_state[CAN_B] = CAN_WRITE_ST_CHECK_QUEUE;
+    can_bo_hold[CAN_A] = 0U;
+    can_bo_hold[CAN_B] = 0U;
 
     can_tx_mbox_init();
     can_rx_int_enable();
