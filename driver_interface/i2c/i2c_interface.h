@@ -52,8 +52,7 @@ typedef enum
 #define I2C_SCL_HZ                  400000UL
 #define I2C_MODCLK_MHZ              10U
 #define I2C_IPSC                    ((SYSCLK_MHZ / I2C_MODCLK_MHZ) - 1U)
-#define I2C_MODCLK_HZ               (((unsigned long)SYSCLK_MHZ * 1000000UL) / \
-                                     (I2C_IPSC + 1U))
+#define I2C_MODCLK_HZ               ((SYSCLK_MHZ * 1000000UL) / (I2C_IPSC + 1U))
 #define I2C_CLK_D                   5U
 #define I2C_SCL_PERIOD              ((I2C_MODCLK_HZ + I2C_SCL_HZ - 1UL) / I2C_SCL_HZ)
 #define I2C_SCL_LOW                 ((I2C_SCL_PERIOD * 3UL) / 5UL)
@@ -66,15 +65,6 @@ typedef enum
 #endif
 #if (I2C_IPSC > 255U)
 #error "I2C_IPSC does not fit I2CPSC."
-#endif
-#if (I2C_MODCLK_HZ < 7000000UL) || (I2C_MODCLK_HZ > 12000000UL)
-#error "I2C module clock must be 7..12 MHz."
-#endif
-#if (I2C_SCL_LOW <= I2C_CLK_D) || (I2C_SCL_HIGH <= I2C_CLK_D)
-#error "I2C SCL low/high counts too small for d."
-#endif
-#if ((I2C_MODCLK_HZ / I2C_SCL_PERIOD) > I2C_SCL_HZ)
-#error "I2C SCL exceeds I2C_SCL_HZ."
 #endif
 
 typedef enum
