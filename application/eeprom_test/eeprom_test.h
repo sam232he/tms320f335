@@ -3,23 +3,14 @@
 
 #include "../../driver_interface/eeprom/eeprom_interface.h"
 
-#define EEPROM_TEST_N               8U
+#define EEPROM_TEST_N               4U
 
 /*
- * Write 8 bytes through eeprom_write(), then read them back with
- * eeprom_read() / eeprom_rx(). CAT24C256 at 0x0100 (page-aligned).
- * i2c_write(I2C_A) runs every call. After the write xfer and queue
- * go idle, wait 10 ms for tWR before the read. Timeouts drain I2C
- * (pending xfer/queue + leftover RX) before the next cycle.
- *
- * eeprom_test_data:
- *   [0]=last TX[0], [1]=last RX[0], [2]=pass, [3]=fail,
- *   [4]=write count, [5]=read count, [6]=state, [7]=last compare (1=match).
- * eeprom_test_tx_data / eeprom_test_rx_data are the 8-byte payloads.
+ * One-shot write/read of 4 bytes at 0x0100. Blocks until done.
+ * eeprom_test_ok: 1 = match, 0 = mismatch.
  */
-extern volatile Uint16 eeprom_test_data[8];
-extern volatile Uint16 eeprom_test_tx_data[EEPROM_TEST_N];
-extern volatile Uint16 eeprom_test_rx_data[EEPROM_TEST_N];
+extern volatile Uint16 eeprom_test_ok;
+extern volatile Uint16 eeprom_test_rx[EEPROM_TEST_N];
 
 void eeprom_test(void);
 

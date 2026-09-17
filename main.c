@@ -10,6 +10,8 @@
 #include "eeprom_test.h"
 #include "encoder_test.h"
 
+volatile Uint16 eeprom_test_run;
+
 int main(void)
 {
     system_init();
@@ -19,9 +21,13 @@ int main(void)
         can_test();
         adc_test();
         gpio_test();
-        pwm_test();
         sci_test();
-        eeprom_test();
+        pwm_test();
         encoder_test();
+        if (eeprom_test_run != 0U)
+        {
+            eeprom_test_run = 0U;
+            eeprom_test();
+        }
     }
 }
