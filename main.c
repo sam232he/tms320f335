@@ -5,10 +5,10 @@
 #include "can_send.h"
 #include "adc_test.h"
 #include "gpio_test.h"
-#include "pwm_test.h"
 #include "sci_test.h"
 #include "eeprom_test.h"
 #include "encoder_test.h"
+#include "motor_test.h"
 
 volatile Uint16 eeprom_test_run;
 
@@ -22,7 +22,7 @@ int main(void)
         adc_test();
         gpio_test();
         sci_test();
-        pwm_test();
+        motor_test();
         encoder_test();
         if (eeprom_test_run != 0U)
         {

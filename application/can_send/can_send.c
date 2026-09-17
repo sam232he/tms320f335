@@ -1,28 +1,20 @@
 #include "can_send.h"
 #include "can_interface.h"
-#include "timer_interface.h"
 
 void can_test(void)
 {
-    static Uint32 last_tick;
-    Uint32 now;
     can_msg_t msg;
-    Uint16 i;
 
-    now = timer_tick();
-    if ((now - last_tick) >= 200UL)  /* 200 ms */
+    while (can_rx(CAN_B, &msg) != 0U)
     {
-        last_tick = now;
-
-        msg.id = 0x123UL;
-        msg.ide = CAN_ID_STD;
-        msg.dlc = 8U;
-        msg.mailbox = 0U;
-        for (i = 0U; i < 8U; i++)
+        if (msg.ide == CAN_ID_EXT)
         {
-            msg.data[i] = (Uint16)(i + 1U);
+            msg.id = (msg.id + 1UL) & 0x1FFFFFFFUL;
         }
-
+        else
+        {
+            msg.id = (msg.id + 1UL) & 0x7FFUL;
+        }
         (void)can_tx(CAN_B, &msg);
     }
 

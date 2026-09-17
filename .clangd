@@ -18,10 +18,20 @@ CompileFlags:
     - -Idriver_interface/adc
     - -Idriver_interface/spi
     - -Idriver_interface/sci
+    - -Idriver_interface/i2c
     - -Idriver_interface/timer
+    - -Idriver_interface/eeprom
+    - -Idriver_interface/encoder
+    - -Idriver_interface/drive
     - -Iapplication/can_send
     - -Iapplication/adc_test
     - -Iapplication/gpio_test
+    - -Iapplication/pwm_test
+    - -Iapplication/sci_test
+    - -Iapplication/i2c_test
+    - -Iapplication/eeprom_test
+    - -Iapplication/encoder_test
+    - -Iapplication/motor_test
     - -IC:/ti/ccs1230/ccs/tools/compiler/ti-cgt-c2000_22.6.0.LTS/include
     - -D_TMS320C28XX=1
     - -DLARGE_MODEL=1

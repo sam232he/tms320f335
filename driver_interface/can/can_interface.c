@@ -1,5 +1,6 @@
 #include "can_interface.h"
 #include "DSP28x_Project.h"
+#include "string.h"
 
 typedef enum
 {
@@ -131,14 +132,49 @@ static volatile struct LAM_REGS *can_lams(can_module_t mod)
     return &ECanaLAMRegs;
 }
 
+/*
+ * cfg->mask: 1 = ID bit must match. eCAN LAM is inverted (1 = don't care).
+ * AME is set only when at least one ID bit is ignored. TX does not filter.
+ */
+static void can_filter_hw(const can_mbox_cfg_t *cfg, Uint32 *msgid, Uint32 *lam_val)
+{
+    Uint32 care;
+    Uint32 dont_care;
+
+    *lam_val = 0UL;
+    if (cfg->dir != CAN_RX)
+    {
+        return;
+    }
+
+    if (cfg->ide == CAN_ID_EXT)
+    {
+        care = cfg->mask & 0x1FFFFFFFUL;
+        dont_care = (~care) & 0x1FFFFFFFUL;
+        *lam_val = dont_care;
+    }
+    else
+    {
+        care = cfg->mask & 0x7FFUL;
+        dont_care = (~care) & 0x7FFUL;
+        *lam_val = (dont_care << 18) | 0x3FFFFUL;
+    }
+
+    if (dont_care != 0UL)
+    {
+        *msgid |= 0x40000000UL;
+    }
+}
+
 void can_mbox_config(const can_mbox_cfg_t *cfg)
 {
     volatile struct ECAN_REGS *regs;
     volatile struct MBOX *mbox;
     volatile union CANLAM_REG *lam;
     struct ECAN_REGS shadow;
-    Uint32 mask;
+    Uint32 mbox_bit;
     Uint32 msgid;
+    Uint32 lam_val;
 
     if ((cfg == 0) || (cfg->mailbox > 31U))
     {
@@ -152,11 +188,11 @@ void can_mbox_config(const can_mbox_cfg_t *cfg)
     regs = can_regs(cfg->module);
     mbox = &can_mboxes(cfg->module)->MBOX0 + cfg->mailbox;
     lam = &can_lams(cfg->module)->LAM0 + cfg->mailbox;
-    mask = 1UL << cfg->mailbox;
+    mbox_bit = 1UL << cfg->mailbox;
 
     /* TI: CANME must be 0 before writing MSGID. */
     shadow.CANME.all = regs->CANME.all;
-    shadow.CANME.all &= ~mask;
+    shadow.CANME.all &= ~mbox_bit;
     regs->CANME.all = shadow.CANME.all;
 
     if (cfg->ide == CAN_ID_EXT)
@@ -169,39 +205,36 @@ void can_mbox_config(const can_mbox_cfg_t *cfg)
         msgid = (cfg->id & 0x7FFUL) << 18;
     }
 
-    if (cfg->ame != 0U)
-    {
-        msgid |= 0x40000000UL;
-    }
+    can_filter_hw(cfg, &msgid, &lam_val);
 
     mbox->MSGID.all = msgid;
     mbox->MSGCTRL.all = (Uint32)((cfg->dlc > 8U) ? 8U : cfg->dlc);
-    lam->all = cfg->lam;
+    lam->all = lam_val;
 
     shadow.CANMD.all = regs->CANMD.all;
     if (cfg->dir == CAN_RX)
     {
-        shadow.CANMD.all |= mask;
+        shadow.CANMD.all |= mbox_bit;
     }
     else
     {
-        shadow.CANMD.all &= ~mask;
+        shadow.CANMD.all &= ~mbox_bit;
     }
     regs->CANMD.all = shadow.CANMD.all;
 
     EALLOW;
     shadow.CANMIL.all = regs->CANMIL.all;
-    shadow.CANMIL.all &= ~mask;          /* RX/TX mailbox interrupt on line 0 */
+    shadow.CANMIL.all &= ~mbox_bit;      /* RX/TX mailbox interrupt on line 0 */
     regs->CANMIL.all = shadow.CANMIL.all;
 
     shadow.CANMIM.all = regs->CANMIM.all;
     if ((cfg->dir == CAN_RX) && (cfg->enable != 0U))
     {
-        shadow.CANMIM.all |= mask;
+        shadow.CANMIM.all |= mbox_bit;
     }
     else
     {
-        shadow.CANMIM.all &= ~mask;
+        shadow.CANMIM.all &= ~mbox_bit;
     }
     regs->CANMIM.all = shadow.CANMIM.all;
     EDIS;
@@ -209,7 +242,7 @@ void can_mbox_config(const can_mbox_cfg_t *cfg)
     if (cfg->enable != 0U)
     {
         shadow.CANME.all = regs->CANME.all;
-        shadow.CANME.all |= mask;
+        shadow.CANME.all |= mbox_bit;
         regs->CANME.all = shadow.CANME.all;
     }
 }
@@ -495,7 +528,7 @@ void can_write(can_module_t mod)
     }
 }
 
-static void can_tx_mbox_init(void)
+static void can_mbox_init(void)
 {
     can_mbox_cfg_t cfg;
     Uint16 i;
@@ -503,8 +536,7 @@ static void can_tx_mbox_init(void)
     cfg.dir = CAN_TX;
     cfg.ide = CAN_ID_STD;
     cfg.id = 0UL;
-    cfg.lam = 0UL;
-    cfg.ame = 0U;
+    cfg.mask = 0x7FFUL;
     cfg.dlc = 8U;
     cfg.enable = 1U;
 
@@ -519,9 +551,8 @@ static void can_tx_mbox_init(void)
 
     cfg.mailbox = 16U;
     cfg.dir = CAN_RX;
-    cfg.id = 0UL;
-    cfg.lam = 0x1FFFFFFFUL;
-    cfg.ame = 1U;
+    cfg.id = 25UL;
+    cfg.mask = 0UL;
     cfg.module = CAN_A;
     can_mbox_config(&cfg);
     cfg.module = CAN_B;
@@ -548,7 +579,13 @@ void can_init(void)
     can_write_state[CAN_B] = CAN_WRITE_ST_CHECK_QUEUE;
     can_bo_hold[CAN_A] = 0U;
     can_bo_hold[CAN_B] = 0U;
+    memset(can_write_held, 0x0, sizeof(can_write_held));
+    memset(&can_q_buf[0][0][0], 0x0, sizeof(can_q_buf));
+    memset((void*) &can_q_head[0][0], 0x0, sizeof(can_q_head));
+    memset((void*) &can_q_tail[0][0], 0x0, sizeof(can_q_tail));
+    memset((void *)&can_q_n[0][0],0x0,sizeof(can_q_n));
 
-    can_tx_mbox_init();
+    can_mbox_init();
     can_rx_int_enable();
+
 }

@@ -28,8 +28,7 @@ typedef struct
     can_dir_t dir;
     can_id_type_t ide;
     Uint32 id;          /* 11-bit or 29-bit */
-    Uint32 lam;         /* RX local acceptance mask; 1 = don't care */
-    Uint16 ame;         /* 1 = use LAM */
+    Uint32 mask;        /* RX: 1 = ID bit must match, 0 = ignore */
     Uint16 dlc;         /* 0 .. 8 */
     Uint16 enable;
 } can_mbox_cfg_t;

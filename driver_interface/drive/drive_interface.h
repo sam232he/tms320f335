@@ -7,7 +7,8 @@
  * DRV8432DKD dual full-bridge on top of pwm_interface.
  * Pin mux is in gpio_interface. Complementary PWM and deadband stay
  * in pwm_interface (20 kHz up-down, 1 us). This layer maps motors
- * and DRV reset/status pins. Not called from system_init/main.
+ * and DRV reset/status pins. drive_init() is called from system_init.
+ * drive_enable() is only used by motor_test.
  *
  * Schematic (drive.md) / SLES242G:
  *   DRIVE_1  OUT_A/OUT_B  PWM_A/B  GPIO10/11  PWM_6  RESET_AB GPIO26

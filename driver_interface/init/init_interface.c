@@ -2,6 +2,7 @@
 #include "gpio_interface.h"
 #include "can_interface.h"
 #include "pwm_interface.h"
+#include "drive_interface.h"
 #include "adc_interface.h"
 #include "sci_interface.h"
 #include "i2c_interface.h"
@@ -28,11 +29,12 @@ void system_init(void)
     encoder_init();
     adc_init();
     pwm_init();
+    drive_init();
     can_init();
     sci_init();
     i2c_init();
     eeprom_init();
     timer_init();
-
+DELAY_US(800000);
     EINT;
 }

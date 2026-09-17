@@ -7,8 +7,8 @@
  * Tests use the schematic peripherals:
  *   PWM5/PWM6, eCAN-B, SCI-A/B/C, I2C-A EEPROM, ADCINA0/A1/B0, LED1..6,
  *   ENC1/ENC2 SSI (CLK out idle-high, DATA in).
- * RST_AB stays asserted so DRV8432 outputs stay Hi-Z while PWM GPIO
- * is exercised.
+ * RST_AB is asserted at gpio_init. motor_test may release it via
+ * drive_enable(). BOARD_TEST_TOGGLE_DRV_RESET must stay 0.
  */
 
 #define BOARD_TEST_MODE                 1U

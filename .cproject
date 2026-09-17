@@ -56,13 +56,16 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/drive"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/pwm_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/sci_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/i2c_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/eeprom_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.973169149" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>
@@ -94,7 +97,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="28335_RAM_lnk.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -154,13 +157,16 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/drive"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/pwm_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/sci_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/i2c_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/eeprom_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.955945298" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>
@@ -204,4 +210,5 @@
 		<project id="tms320f335.com.ti.ccstudio.buildDefinitions.C2000.ProjectType.1652377212" name="C2000" projectType="com.ti.ccstudio.buildDefinitions.C2000.ProjectType"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

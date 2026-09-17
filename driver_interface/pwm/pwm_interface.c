@@ -23,6 +23,19 @@
 #error "Deadband ticks exceed 10 bits. Lower PWM_DB_NS."
 #endif
 
+#define PWM_IDLE_DUTY           50U
+
+static Uint16 pwm_cmpa_from_duty(Uint16 duty, Uint16 tbprd)
+{
+    if (duty > 100U)
+    {
+        duty = 100U;
+    }
+
+    /* Up-down, CAU=SET / CAD=CLEAR: high time is (TBPRD - CMPA) / TBPRD. */
+    return (Uint16)(((Uint32)tbprd * (Uint32)(100U - duty)) / 100UL);
+}
+
 typedef struct
 {
     pwm_module_t module;
@@ -119,8 +132,22 @@ static void pwm_init_channel(const pwm_ch_cfg_t *cfg)
     epwm->CMPCTL.bit.LOADAMODE = PWM_CMP_LOAD;
     epwm->CMPCTL.bit.LOADBMODE = PWM_CMP_LOAD;
 
-    epwm->CMPA.half.CMPA = 0U;
     epwm->CMPB = 0U;
+    if (cfg->complementary != 0U)
+    {
+        /*
+         * Write 50% into the active register before the time-base starts.
+         * Shadow-only would leave the first period at CMPA=0 (100% duty).
+         */
+        epwm->CMPCTL.bit.SHDWAMODE = CC_IMMEDIATE;
+        epwm->CMPA.half.CMPA = pwm_cmpa_from_duty(PWM_IDLE_DUTY, PWM_TBPRD);
+        epwm->CMPCTL.bit.SHDWAMODE = PWM_CMP_SHADOW;
+        epwm->CMPA.half.CMPA = pwm_cmpa_from_duty(PWM_IDLE_DUTY, PWM_TBPRD);
+    }
+    else
+    {
+        epwm->CMPA.half.CMPA = 0U;
+    }
 
     epwm->AQCTLA.bit.ZRO = PWM_AQ_ZRO;
     epwm->AQCTLA.bit.PRD = PWM_AQ_PRD;
@@ -182,7 +209,6 @@ void pwm_init(void)
 void pwm_set_duty(pwm_module_t pwm_module, Uint16 duty)
 {
     volatile struct EPWM_REGS *epwm;
-    Uint32 cmpa;
 
     epwm = pwm_regs(pwm_module);
     if (epwm == 0)
@@ -190,12 +216,5 @@ void pwm_set_duty(pwm_module_t pwm_module, Uint16 duty)
         return;
     }
 
-    if (duty > 100U)
-    {
-        duty = 100U;
-    }
-
-    /* Up-down, CAU=SET / CAD=CLEAR: high time is (TBPRD - CMPA) / TBPRD. */
-    cmpa = ((Uint32)epwm->TBPRD * (Uint32)(100U - duty)) / 100UL;
-    epwm->CMPA.half.CMPA = (Uint16)cmpa;
+    epwm->CMPA.half.CMPA = pwm_cmpa_from_duty(duty, epwm->TBPRD);
 }

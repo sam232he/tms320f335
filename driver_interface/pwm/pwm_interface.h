@@ -32,7 +32,8 @@ typedef enum
  * Up-down:   f = TBCLK / (2 * TBPRD)
  *
  * PWM_OUTPUT_ENABLE = 1: GPIO8..11 mux to EPWM5/6 (schematic motor PWM).
- * RST_AB stays low so the DRV8432 power stage stays Hi-Z.
+ * Complementary channels init at 50% (near-zero H-bridge voltage) while
+ * the time-base is frozen. RST_AB stays low until drive_enable().
  */
 
 #define PWM_FREQ_HZ                 20000UL
