@@ -18,7 +18,7 @@ static pwm_test_ch_t pwm_test_ch[] =
     { PWM_5, 50U, 0U }  /* DSP_EPWM2_A/B = EPWM5B/A, GPIO9/8   */
 };
 
-static Uint32 pwm_test_last_tick;
+static Uint32 pwm_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
 volatile Uint16 pwm_test_duty[7];
 

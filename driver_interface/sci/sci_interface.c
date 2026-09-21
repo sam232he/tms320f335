@@ -278,9 +278,16 @@ void sci_init(void)
     sci_port_init(&ScibRegs);
     sci_port_init(&ScicRegs);
 
+    /* COFF ABI does not zero .ebss. Reset queues so head/tail/n are valid. */
     for (i = 0U; i < SCI_COUNT; i++)
     {
         sci_write_state[i] = SCI_WRITE_ST_CHECK_QUEUE;
+        sci_q_head[i][0] = 0U;
+        sci_q_head[i][1] = 0U;
+        sci_q_tail[i][0] = 0U;
+        sci_q_tail[i][1] = 0U;
+        sci_q_n[i][0] = 0U;
+        sci_q_n[i][1] = 0U;
     }
 
     sci_rx_int_enable();

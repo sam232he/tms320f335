@@ -1,7 +1,8 @@
 #include "timer_interface.h"
 #include "DSP28x_Project.h"
 
-static volatile Uint32 timer_ticks;
+/* COFF ABI does not zero .ebss. Explicit init puts this in .cinit. */
+static volatile Uint32 timer_ticks = 0UL;
 
 interrupt void timer0_isr(void)
 {

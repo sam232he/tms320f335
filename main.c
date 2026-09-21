@@ -9,8 +9,9 @@
 #include "eeprom_test.h"
 #include "encoder_test.h"
 #include "motor_test.h"
+#include "pwm_test.h"
 
-volatile Uint16 eeprom_test_run;
+volatile Uint16 eeprom_test_run = 0;
 
 int main(void)
 {
@@ -22,7 +23,8 @@ int main(void)
         adc_test();
         gpio_test();
         sci_test();
-        motor_test();
+        pwm_test();
+//        motor_test();
         encoder_test();
         if (eeprom_test_run != 0U)
         {

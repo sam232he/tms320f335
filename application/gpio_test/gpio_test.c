@@ -3,8 +3,16 @@
 
 static const Uint16 gpio_test_pin[] = { GPIO_TEST_LIST };
 
-static Uint16 gpio_test_count;
-static Uint32 gpio_test_last_tick;
+/*
+ * COFF ABI does not zero .ebss at boot. Without explicit initializers these
+ * hold random SRAM after power-up and the catch-up loop below could run for
+ * minutes. Explicit init puts them in .cinit so _c_int00 sets them.
+ */
+static Uint16 gpio_test_count = 0U;
+static Uint32 gpio_test_last_tick = 0UL;
+
+/* Never catch up more than this many missed ticks in one call. */
+#define GPIO_TEST_MAX_CATCHUP_TICKS     1000UL
 
 volatile Uint16 otw_data;
 volatile Uint16 fault_data;
@@ -22,6 +30,12 @@ void gpio_test(void)
         return;
     }
     gpio_test_last_tick = now;
+
+    /* Bound the catch-up so a large gap (first call, long stall) cannot spin here. */
+    if (ticks > GPIO_TEST_MAX_CATCHUP_TICKS)
+    {
+        ticks = GPIO_TEST_MAX_CATCHUP_TICKS;
+    }
 
     /* Status inputs only. Missing / inactive FAULT and OTW are not errors. */
     otw_data = gpio_read(PIN_OTW);

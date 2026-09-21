@@ -13,7 +13,7 @@ typedef struct
     Uint16 tx;
 } sci_test_ch_t;
 
-static Uint32 sci_test_last_tick;
+static Uint32 sci_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
 volatile Uint16 sci_a_test_data[4];
 volatile Uint16 sci_b_test_data[4];

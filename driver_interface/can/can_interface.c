@@ -563,7 +563,9 @@ void can_init(void)
 {
     struct ECAN_REGS shadow;
 
-    InitECan();
+    /* Schematic DSP_CAN is eCAN-B on GPIO16/17. Do not init eCAN-A:
+     * its CANTX/CANRX pins are not muxed, so CCE may never set and boot hangs. */
+    InitECanb();
 
     /* SPRUEU1: ABO bus-on after 128 * 11 recessive bits. EALLOW. */
     EALLOW;

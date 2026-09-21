@@ -25,7 +25,7 @@
 #define XTAL_MHZ        25U
 
 /* PLLCR.DIV: 0 = PLL bypass, 1..10 = multiply OSCCLK. */
-#define PLL_CR          10U
+#define PLL_CR          8U
 
 /* PLLSTS.DIVSEL: 0 or 1 = divide by 4, 2 = divide by 2, 3 = divide by 1. */
 #define PLL_DIVSEL      2U

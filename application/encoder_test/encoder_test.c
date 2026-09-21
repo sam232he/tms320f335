@@ -1,7 +1,7 @@
 #include "encoder_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
-static Uint32 encoder_test_last_tick;
+static Uint32 encoder_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
 volatile Uint32 enc1_counts;
 volatile Uint32 enc2_counts;

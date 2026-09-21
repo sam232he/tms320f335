@@ -395,6 +395,14 @@ void i2c_init(void)
     i2c_nack_n = 0U;
     i2c_nack_hit = 0U;
 
+    /* COFF ABI does not zero .ebss. Reset queues so head/tail/n are valid. */
+    i2c_cmd_head = 0U;
+    i2c_cmd_tail = 0U;
+    i2c_cmd_n = 0U;
+    i2c_rx_head = 0U;
+    i2c_rx_tail = 0U;
+    i2c_rx_n = 0U;
+
     /* I2CPSC / I2CCLKx must be written while IRS=0. */
     I2caRegs.I2CMDR.all = 0U;
     I2caRegs.I2CSAR = I2C_EEPROM_ADDR;

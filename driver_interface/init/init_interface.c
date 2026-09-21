@@ -35,6 +35,6 @@ void system_init(void)
     i2c_init();
     eeprom_init();
     timer_init();
-DELAY_US(800000);
+    DELAY_US(800000);
     EINT;
 }

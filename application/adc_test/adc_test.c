@@ -3,7 +3,7 @@
 
 static const adc_ch_t adc_test_ch[] = { ADC_SLOT_LIST };
 
-static Uint32 adc_test_last_tick;
+static Uint32 adc_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
 volatile Uint16 adc_test_counts[16];
 volatile float adc_test_volts[16];

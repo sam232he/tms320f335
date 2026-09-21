@@ -11,12 +11,40 @@
 #include "DSP2833x_Device.h"
 #include "DSP2833x_Examples.h"
 
+/*
+ * CCE is granted only after 11 recessive bits on CANRX. If the pin is not
+ * muxed, the transceiver is off, or the bus is stuck dominant, an infinite
+ * wait never returns and the rest of boot (LED blink) never starts.
+ * ~1e6 register polls is on the order of 100 ms at 100 MHz.
+ */
+#define CAN_CCE_WAIT_MAX    1000000UL
+
+static Uint16 can_wait_cce(volatile struct ECAN_REGS *regs, Uint16 want)
+{
+    Uint32 n;
+    struct ECAN_REGS shadow;
+
+    n = 0UL;
+    do
+    {
+        shadow.CANES.all = regs->CANES.all;
+        if (shadow.CANES.bit.CCE == want)
+        {
+            return 1U;
+        }
+        n++;
+    } while (n < CAN_CCE_WAIT_MAX);
+
+    return 0U;
+}
+
 static void InitECanModule(volatile struct ECAN_REGS *regs,
                            volatile struct ECAN_MBOXES *mboxes)
 {
     struct ECAN_REGS shadow;
     volatile struct MBOX *mbox;
     Uint16 i;
+    Uint16 in_config;
 
     EALLOW;
 
@@ -49,10 +77,7 @@ static void InitECanModule(volatile struct ECAN_REGS *regs,
     shadow.CANMC.bit.CCR = 1;
     regs->CANMC.all = shadow.CANMC.all;
 
-    do
-    {
-        shadow.CANES.all = regs->CANES.all;
-    } while (shadow.CANES.bit.CCE != 1);
+    in_config = can_wait_cce(regs, 1U);
 
     /*
      * CAN clock is SYSCLKOUT/2. 500 kbit/s.
@@ -61,40 +86,40 @@ static void InitECanModule(volatile struct ECAN_REGS *regs,
      *   125 MHz -> 62.5 MHz CAN: BRP=5, 25 tq ->  62.5e6 / (5 * 25) = 500 k
      *   100 MHz -> 50 MHz CAN: BRP=10, 10 tq  ->  50e6 / (10 * 10) = 500 k
      */
-    shadow.CANBTC.all = 0UL;
+    if (in_config != 0U)
+    {
+        shadow.CANBTC.all = 0UL;
 #if (SYSCLK_MHZ == 150U)
-    shadow.CANBTC.bit.BRPREG = 9;
-    shadow.CANBTC.bit.TSEG2REG = 2;
-    shadow.CANBTC.bit.TSEG1REG = 10;
+        shadow.CANBTC.bit.BRPREG = 9;
+        shadow.CANBTC.bit.TSEG2REG = 2;
+        shadow.CANBTC.bit.TSEG1REG = 10;
 #elif (SYSCLK_MHZ == 125U)
-    shadow.CANBTC.bit.BRPREG = 4;
-    shadow.CANBTC.bit.TSEG2REG = 7;
-    shadow.CANBTC.bit.TSEG1REG = 15;
+        shadow.CANBTC.bit.BRPREG = 4;
+        shadow.CANBTC.bit.TSEG2REG = 7;
+        shadow.CANBTC.bit.TSEG1REG = 15;
 #elif (SYSCLK_MHZ == 100U)
-    shadow.CANBTC.bit.BRPREG = 9;
-    shadow.CANBTC.bit.TSEG2REG = 1;
-    shadow.CANBTC.bit.TSEG1REG = 6;
+        shadow.CANBTC.bit.BRPREG = 9;
+        shadow.CANBTC.bit.TSEG2REG = 1;
+        shadow.CANBTC.bit.TSEG1REG = 6;
 #else
 #error "No 500 kbit/s CANBTC for this SYSCLK_MHZ."
 #endif
-    /*
-     * SPRUEU1 / SPRU074 CANBTC.SAM: triple-sample only if BRP > 4
-     * (BRP = BRPREG+1). 500 kbit/s tables here are BRP 10, 5, 10.
-     */
-    if ((shadow.CANBTC.bit.BRPREG + 1U) > 4U)
-    {
-        shadow.CANBTC.bit.SAM = 1;
+        /*
+         * SPRUEU1 / SPRU074 CANBTC.SAM: triple-sample only if BRP > 4
+         * (BRP = BRPREG+1). 500 kbit/s tables here are BRP 10, 5, 10.
+         */
+        if ((shadow.CANBTC.bit.BRPREG + 1U) > 4U)
+        {
+            shadow.CANBTC.bit.SAM = 1;
+        }
+        regs->CANBTC.all = shadow.CANBTC.all;
     }
-    regs->CANBTC.all = shadow.CANBTC.all;
 
     shadow.CANMC.all = regs->CANMC.all;
     shadow.CANMC.bit.CCR = 0;
     regs->CANMC.all = shadow.CANMC.all;
 
-    do
-    {
-        shadow.CANES.all = regs->CANES.all;
-    } while (shadow.CANES.bit.CCE != 0);
+    (void)can_wait_cce(regs, 0U);
 
     regs->CANME.all = 0UL;
 
