@@ -57,6 +57,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/drive"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/gyro"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
@@ -66,6 +67,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/eeprom_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/ControlLoop"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.973169149" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>
@@ -158,6 +160,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/encoder"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/eeprom"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/drive"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/gyro"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/can_send"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/adc_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/gpio_test"/>
@@ -167,6 +170,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/eeprom_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/ControlLoop"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.955945298" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>

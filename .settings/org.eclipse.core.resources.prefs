@@ -1,4 +1,10 @@
 eclipse.preferences.version=1
+encoding//Debug/application/ControlLoop/position/subdir_rules.mk=UTF-8
+encoding//Debug/application/ControlLoop/position/subdir_vars.mk=UTF-8
+encoding//Debug/application/ControlLoop/subdir_rules.mk=UTF-8
+encoding//Debug/application/ControlLoop/subdir_vars.mk=UTF-8
+encoding//Debug/application/ControlLoop/velocity/subdir_rules.mk=UTF-8
+encoding//Debug/application/ControlLoop/velocity/subdir_vars.mk=UTF-8
 encoding//Debug/application/adc_test/subdir_rules.mk=UTF-8
 encoding//Debug/application/adc_test/subdir_vars.mk=UTF-8
 encoding//Debug/application/can_send/subdir_rules.mk=UTF-8
