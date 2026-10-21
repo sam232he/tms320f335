@@ -29,6 +29,8 @@
 
 #define PIN_OTW                         12U     /* pin 21, input from DRV8432 OTW */
 #define PIN_FAULT                       13U     /* pin 24, input from DRV8432 FAULT */
+#define PIN_CURRENT_SENSOR_1_FAULT      29U     /* current sensor 1 fault, active-low */
+#define PIN_CURRENT_SENSOR_2_FAULT      30U     /* current sensor 2 fault, active-low */
 #define PIN_RST_AB                      26U     /* pin 72, output to DRV8432 RESET_AB */
 /* RST_CD is not connected on the DSP sheet. Do not allocate a GPIO. */
 

@@ -25,9 +25,9 @@
  *   DSP_ADCINB0 / pin 46 / ADCINB0 = IOUT_2  (current sensor 2 net)
  *       direct ADC pin voltage only; no populated divider
  *
- * Sensor engineering-unit conversion (ACS711 current, MPXHZ6400 pressure)
- * is intentionally disabled until external sensors are connected and
- * scaling is verified. Do not apply datasheet transfer functions here.
+ * ACS712 engineering-unit conversion is implemented by
+ * driver_interface/current_sensor. This ADC driver remains responsible only
+ * for raw counts and ADC pin voltage.
  *
  * Open / missing sensor nets are not fatal for board-only testing.
  *

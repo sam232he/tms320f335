@@ -51,6 +51,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/init"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/pwm"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/adc"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/current_sensor"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/sci"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/i2c"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>
@@ -155,6 +156,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/init"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/pwm"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/adc"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/current_sensor"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/sci"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/i2c"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/driver_interface/timer"/>

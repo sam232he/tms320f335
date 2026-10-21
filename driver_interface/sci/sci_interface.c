@@ -104,6 +104,34 @@ uint16_t sci_tx(sci_module_t mod, const sci_msg_t *msg)
     return sci_q_push(mod, SCI_TX, msg);
 }
 
+uint16_t sci_tx_bytes(sci_module_t mod, const uint16_t *data, uint16_t n)
+{
+    uint16_t m;
+    uint16_t i;
+    sci_msg_t msg;
+
+    if ((data == 0) || (n == 0U) || (sci_mod_ok(mod) == 0U))
+    {
+        return 0U;
+    }
+
+    m = (uint16_t)mod;
+    DINT;
+    if ((SCI_QUEUE_LEN - sci_q_n[m][SCI_TX]) < n)
+    {
+        EINT;
+        return 0U;
+    }
+
+    for (i = 0U; i < n; i++)
+    {
+        msg.data = data[i];
+        (void)sci_q_push(mod, SCI_TX, &msg);
+    }
+    EINT;
+    return 1U;
+}
+
 uint16_t sci_rx(sci_module_t mod, sci_msg_t *msg)
 {
     return sci_q_pop(mod, SCI_RX, msg);

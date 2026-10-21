@@ -134,8 +134,8 @@ float adc_pin_voltage(uint16_t adc_code)
      * No schematic resistor divider is populated on IOUT_1 / PS_OUT /
      * IOUT_2, so this is the voltage at the ADC pin.
      *
-     * Sensor engineering-unit conversion is intentionally disabled
-     * until external sensors are connected and scaling is verified.
+     * Sensor engineering-unit conversion is implemented by the dedicated
+     * current_sensor driver and is not part of this generic ADC function.
      */
     if (adc_code > 4095U)
     {

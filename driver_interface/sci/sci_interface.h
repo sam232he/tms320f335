@@ -72,6 +72,8 @@ typedef struct
 
 void sci_init(void);
 uint16_t sci_tx(sci_module_t mod, const sci_msg_t *msg);
+/* Queue a complete byte frame atomically; returns 1 only if all bytes fit. */
+uint16_t sci_tx_bytes(sci_module_t mod, const uint16_t *data, uint16_t n);
 uint16_t sci_rx(sci_module_t mod, sci_msg_t *msg);
 
 /*
