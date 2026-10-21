@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef ADC_TEST_H
 #define ADC_TEST_H
 
@@ -15,7 +16,7 @@
  *
  * Call from the idle loop; copies every 100 ms (1 ms timer_tick).
  */
-extern volatile Uint16 adc_test_counts[16];
+extern volatile uint16_t adc_test_counts[16];
 extern volatile float adc_test_volts[16];
 
 void adc_test(void);

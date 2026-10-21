@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef ENCODER_INTERFACE_H
 #define ENCODER_INTERFACE_H
 
@@ -17,6 +18,6 @@
 #define ENC_CLK_HALF_US             2U      /* low or high; period 4 us */
 
 void encoder_init(void);
-Uint32 encoder_read_counts(Uint16 enc);     /* 21-bit word, 0 .. 2097151 */
+uint32_t encoder_read_counts(uint16_t enc);     /* 21-bit word, 0 .. 2097151 */
 
 #endif /* ENCODER_INTERFACE_H */

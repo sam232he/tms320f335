@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "pwm_interface.h"
 #include "DSP28x_Project.h"
 
@@ -10,11 +11,11 @@
 #define PWM_TBPRD_CALC  ((PWM_TBCLK_HZ / PWM_FREQ_HZ) - 1UL)
 #endif
 
-#define PWM_TBPRD       ((Uint16)PWM_TBPRD_CALC)
+#define PWM_TBPRD       ((uint16_t)PWM_TBPRD_CALC)
 
 #define PWM_DB_TICKS_CALC \
     ((PWM_DB_NS * (PWM_TBCLK_HZ / 1000UL)) / 1000000UL)
-#define PWM_DB_TICKS    ((Uint16)PWM_DB_TICKS_CALC)
+#define PWM_DB_TICKS    ((uint16_t)PWM_DB_TICKS_CALC)
 
 #if (PWM_TBPRD_CALC == 0UL) || (PWM_TBPRD_CALC > 65535UL)
 #error "PWM period out of range. Change PWM_FREQ_HZ or clock dividers."
@@ -25,7 +26,7 @@
 
 #define PWM_IDLE_DUTY           50U
 
-static Uint16 pwm_cmpa_from_duty(Uint16 duty, Uint16 tbprd)
+static uint16_t pwm_cmpa_from_duty(uint16_t duty, uint16_t tbprd)
 {
     if (duty > 100U)
     {
@@ -33,21 +34,21 @@ static Uint16 pwm_cmpa_from_duty(Uint16 duty, Uint16 tbprd)
     }
 
     /* Up-down, CAU=SET / CAD=CLEAR: high time is (TBPRD - CMPA) / TBPRD. */
-    return (Uint16)(((Uint32)tbprd * (Uint32)(100U - duty)) / 100UL);
+    return (uint16_t)(((uint32_t)tbprd * (uint32_t)(100U - duty)) / 100UL);
 }
 
 typedef struct
 {
     pwm_module_t module;
-    Uint16 enable;
-    Uint16 is_master;
-    Uint16 complementary;
-    Uint16 polsel;
-    Uint16 phs;
-    Uint16 phsdir;
-    Uint16 soca_en;
-    Uint16 soca_sel;
-    Uint16 soca_prd;
+    uint16_t enable;
+    uint16_t is_master;
+    uint16_t complementary;
+    uint16_t polsel;
+    uint16_t phs;
+    uint16_t phsdir;
+    uint16_t soca_en;
+    uint16_t soca_sel;
+    uint16_t soca_prd;
 } pwm_ch_cfg_t;
 
 static const pwm_ch_cfg_t pwm_ch_table[] =
@@ -190,13 +191,13 @@ static void pwm_init_channel(const pwm_ch_cfg_t *cfg)
 
 void pwm_init(void)
 {
-    Uint16 i;
+    uint16_t i;
 
     EALLOW;
     SysCtrlRegs.PCLKCR0.bit.TBCLKSYNC = 0;
     EDIS;
 
-    for (i = 0U; i < (Uint16)(sizeof(pwm_ch_table) / sizeof(pwm_ch_table[0])); i++)
+    for (i = 0U; i < (uint16_t)(sizeof(pwm_ch_table) / sizeof(pwm_ch_table[0])); i++)
     {
         pwm_init_channel(&pwm_ch_table[i]);
     }
@@ -206,7 +207,7 @@ void pwm_init(void)
     EDIS;
 }
 
-void pwm_set_duty(pwm_module_t pwm_module, Uint16 duty)
+void pwm_set_duty(pwm_module_t pwm_module, uint16_t duty)
 {
     volatile struct EPWM_REGS *epwm;
 

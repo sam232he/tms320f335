@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalVelocity_data.h
  *
@@ -14,7 +15,7 @@
 #include <stdlib.h>
 
 /* Variable Declarations */
-extern boolean_T isInitialized_callNextStepGimbalVelocity;
+extern bool isInitialized_callNextStepGimbalVelocity;
 
 #endif
 /*

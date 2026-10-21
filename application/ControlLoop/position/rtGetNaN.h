@@ -15,8 +15,8 @@
 extern "C" {
 #endif
 
-extern real_T rtGetNaN(void);
-extern real32_T rtGetNaNF(void);
+extern double rtGetNaN(void);
+extern float rtGetNaNF(void);
 
 #ifdef __cplusplus
 }

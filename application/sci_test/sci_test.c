@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "sci_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
@@ -9,15 +10,15 @@
 typedef struct
 {
     sci_module_t mod;
-    volatile Uint16 *data;
-    Uint16 tx;
+    volatile uint16_t *data;
+    uint16_t tx;
 } sci_test_ch_t;
 
-static Uint32 sci_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
+static uint32_t sci_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
-volatile Uint16 sci_a_test_data[4];
-volatile Uint16 sci_b_test_data[4];
-volatile Uint16 sci_c_test_data[4];
+volatile uint16_t sci_a_test_data[4];
+volatile uint16_t sci_b_test_data[4];
+volatile uint16_t sci_c_test_data[4];
 
 static sci_test_ch_t sci_test_ch[SCI_COUNT] =
 {
@@ -30,6 +31,12 @@ static void sci_test_rx(sci_test_ch_t *ch)
 {
     sci_msg_t msg;
 
+    /* SCI-B is reserved for the control-loop command protocol. */
+    if (ch->mod == SCI_B)
+    {
+        return;
+    }
+
     while (sci_rx(ch->mod, &msg) != 0U)
     {
         ch->data[SCI_OBS_RX] = msg.data;
@@ -40,9 +47,9 @@ static void sci_test_rx(sci_test_ch_t *ch)
 
 void sci_test(void)
 {
-    Uint32 now;
+    uint32_t now;
     sci_msg_t msg;
-    Uint16 i;
+    uint16_t i;
 
     for (i = 0U; i < SCI_COUNT; i++)
     {
@@ -56,15 +63,19 @@ void sci_test(void)
 
         for (i = 0U; i < SCI_COUNT; i++)
         {
+            if (sci_test_ch[i].mod == SCI_B)
+            {
+                continue;
+            }
             msg.data = sci_test_ch[i].tx;
             (void)sci_tx(sci_test_ch[i].mod, &msg);
             sci_test_ch[i].data[SCI_OBS_TX] = sci_test_ch[i].tx;
             sci_test_ch[i].data[SCI_OBS_TX_N]++;
-            sci_test_ch[i].tx = (Uint16)((sci_test_ch[i].tx + 1U) & 0xFFU);
+            sci_test_ch[i].tx = (uint16_t)((sci_test_ch[i].tx + 1U) & 0xFFU);
         }
     }
 
     sci_write(SCI_A);
-    sci_write(SCI_B);
+    /* SCI-B is serviced by the control-loop command receiver. */
     sci_write(SCI_C);
 }

@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: rt_nonfinite.c
  *
@@ -18,12 +19,12 @@
 #pragma warning(disable : 264)
 #endif
 
-real_T rtNaN = (real_T)NAN;
-real_T rtInf = (real_T)INFINITY;
-real_T rtMinusInf = -(real_T)INFINITY;
-real32_T rtNaNF = (real32_T)NAN;
-real32_T rtInfF = (real32_T)INFINITY;
-real32_T rtMinusInfF = -(real32_T)INFINITY;
+double rtNaN = (double)NAN;
+double rtInf = (double)INFINITY;
+double rtMinusInf = -(double)INFINITY;
+float rtNaNF = (float)NAN;
+float rtInfF = (float)INFINITY;
+float rtMinusInfF = -(float)INFINITY;
 
 #if defined(__ICL) && __ICL == 1700
 #pragma warning(default : 264)
@@ -34,7 +35,7 @@ real32_T rtMinusInfF = -(real32_T)INFINITY;
  *  Abstract:
  *  Test if value is infinite
  */
-boolean_T rtIsInf(real_T value)
+bool rtIsInf(double value)
 {
   return (isinf(value) != 0U);
 }
@@ -44,9 +45,9 @@ boolean_T rtIsInf(real_T value)
  *  Abstract:
  *  Test if single-precision value is infinite
  */
-boolean_T rtIsInfF(real32_T value)
+bool rtIsInfF(float value)
 {
-  return (isinf((real_T)value) != 0U);
+  return (isinf((double)value) != 0U);
 }
 
 /*
@@ -54,7 +55,7 @@ boolean_T rtIsInfF(real32_T value)
  *  Abstract:
  *  Test if value is not a number
  */
-boolean_T rtIsNaN(real_T value)
+bool rtIsNaN(double value)
 {
   return (isnan(value) != 0U);
 }
@@ -64,9 +65,9 @@ boolean_T rtIsNaN(real_T value)
  *  Abstract:
  *  Test if single-precision value is not a number
  */
-boolean_T rtIsNaNF(real32_T value)
+bool rtIsNaNF(float value)
 {
-  return (isnan((real_T)value) != 0U);
+  return (isnan((double)value) != 0U);
 }
 
 /*

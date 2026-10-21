@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef EEPROM_INTERFACE_H
 #define EEPROM_INTERFACE_H
 
@@ -35,10 +36,10 @@
 #define EEPROM_PAGE_MASK            0xFFC0U /* ~63, 64-byte page base */
 
 void eeprom_init(void);
-void eeprom_write_protect(Uint16 enable);   /* 0 = writes allowed, 1 = WP high */
+void eeprom_write_protect(uint16_t enable);   /* 0 = writes allowed, 1 = WP high */
 
-Uint16 eeprom_write(Uint16 addr, const Uint16 *data, Uint16 n);
-Uint16 eeprom_read(Uint16 addr, Uint16 n);
-Uint16 eeprom_rx(Uint16 *data, Uint16 n);   /* pop completed read; 1 = ok */
+uint16_t eeprom_write(uint16_t addr, const uint16_t *data, uint16_t n);
+uint16_t eeprom_read(uint16_t addr, uint16_t n);
+uint16_t eeprom_rx(uint16_t *data, uint16_t n);   /* pop completed read; 1 = ok */
 
 #endif /* EEPROM_INTERFACE_H */

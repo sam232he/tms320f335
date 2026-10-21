@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef PWM_INTERFACE_H
 #define PWM_INTERFACE_H
 
@@ -131,6 +132,6 @@ typedef enum
 #define PWM_TZ_OST_INT              0U
 
 void pwm_init(void);
-void pwm_set_duty(pwm_module_t mod, Uint16 duty); /* 0 = 0%, 100 = 100% */
+void pwm_set_duty(pwm_module_t mod, uint16_t duty); /* 0 = 0%, 100 = 100% */
 
 #endif /* PWM_INTERFACE_H */

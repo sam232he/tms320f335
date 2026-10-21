@@ -1,10 +1,12 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include "control_loop.h"
 #include "velocity/callNextStepGimbalVelocity.h"
 
 static void velocity_observation(const control_loop_observation_t *in,
                                  struct0_T *out)
 {
-    int i;
+    uint16_t i;
     out->EncInner = in->enc_inner_deg;
     out->EncOuter = in->enc_outer_deg;
     for (i = 0; i < 3; ++i) {
@@ -20,7 +22,7 @@ static void velocity_observation(const control_loop_observation_t *in,
 static void velocity_parameters(const control_loop_parameters_t *in,
                                 struct1_T *out)
 {
-    int i;
+    uint16_t i;
     out->AverageEncInner = in->average_enc_inner_deg;
     out->AverageEncOuter = in->average_enc_outer_deg;
     for (i = 0; i < 3; ++i) {
@@ -51,7 +53,7 @@ static void velocity_parameters(const control_loop_parameters_t *in,
 
 void control_loop_velocity_step(const control_loop_observation_t *observation,
                                 const control_loop_parameters_t *parameters,
-                                unsigned char reset,
+                                uint16_t reset,
                                 double actuator[2])
 {
     struct0_T generated_observation;
@@ -61,7 +63,7 @@ void control_loop_velocity_step(const control_loop_observation_t *observation,
     velocity_observation(observation, &generated_observation);
     velocity_parameters(parameters, &generated_parameters);
     callNextStepGimbalVelocity(&generated_observation, &generated_parameters,
-                               (boolean_T)(reset != 0U), &generated_output);
+                               (bool)(reset != 0U), &generated_output);
     actuator[0] = generated_output.ActuationOut[0];
     actuator[1] = generated_output.ActuationOut[1];
 }

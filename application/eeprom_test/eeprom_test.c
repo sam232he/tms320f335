@@ -1,21 +1,22 @@
+#include <stdint.h>
 #include "eeprom_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
 #define EEPROM_TEST_ADDR            0x0100U
 #define EEPROM_TEST_TWR_MS          10UL    /* CAT24C256 tWR = 5 ms */
 
-static const Uint16 eeprom_test_tx[EEPROM_TEST_N] = {
+static const uint16_t eeprom_test_tx[EEPROM_TEST_N] = {
     0x11U, 0x22U, 0x33U, 0x44U
 };
 
-volatile Uint16 eeprom_test_ok;
-volatile Uint16 eeprom_test_rx[EEPROM_TEST_N];
+volatile uint16_t eeprom_test_ok;
+volatile uint16_t eeprom_test_rx[EEPROM_TEST_N];
 
 void eeprom_test(void)
 {
-    Uint16 rx[EEPROM_TEST_N];
-    Uint16 i;
-    Uint32 t0;
+    uint16_t rx[EEPROM_TEST_N];
+    uint16_t i;
+    uint32_t t0;
 
     eeprom_test_ok = 0U;
     for (i = 0U; i < EEPROM_TEST_N; i++)

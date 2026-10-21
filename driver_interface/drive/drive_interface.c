@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "drive_interface.h"
 #include "gpio_interface.h"
 
@@ -6,7 +7,7 @@ void drive_init(void)
     gpio_write(PIN_RST_AB, 0U);
 }
 
-Uint16 drive_enable(Uint16 motor)
+uint16_t drive_enable(uint16_t motor)
 {
     if (motor != DRIVE_1)
     {
@@ -17,7 +18,7 @@ Uint16 drive_enable(Uint16 motor)
     return 1U;
 }
 
-Uint16 drive_disable(Uint16 motor)
+uint16_t drive_disable(uint16_t motor)
 {
     if (motor != DRIVE_1)
     {
@@ -33,7 +34,7 @@ Uint16 drive_disable(Uint16 motor)
  * opposite full DC, not coast/stop. If motor_app uses 0 as off, the
  * motor slams reverse as soon as reset is released.
  */
-void drive_set_duty(Uint16 motor, Uint16 duty)
+void drive_set_duty(uint16_t motor, uint16_t duty)
 {
     if (motor == DRIVE_1)
     {
@@ -45,12 +46,12 @@ void drive_set_duty(Uint16 motor, Uint16 duty)
     }
 }
 
-Uint16 drive_fault(void)
+uint16_t drive_fault(void)
 {
     return (gpio_read(PIN_FAULT) == 0U) ? 1U : 0U;
 }
 
-Uint16 drive_otw(void)
+uint16_t drive_otw(void)
 {
     return (gpio_read(PIN_OTW) == 0U) ? 1U : 0U;
 }

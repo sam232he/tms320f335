@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "can_interface.h"
 #include "DSP28x_Project.h"
 #include "string.h"
@@ -11,15 +12,15 @@ typedef enum
 static can_write_state_t can_write_state[2];
 static can_msg_t can_write_held[2];
 static can_msg_t can_q_buf[2][2][CAN_QUEUE_LEN];
-static volatile Uint16 can_q_head[2][2];
-static volatile Uint16 can_q_tail[2][2];
-static volatile Uint16 can_q_n[2][2];
-static Uint16 can_bo_hold[2];   /* 1 = this bus-off episode; skip TX */
+static volatile uint16_t can_q_head[2][2];
+static volatile uint16_t can_q_tail[2][2];
+static volatile uint16_t can_q_n[2][2];
+static uint16_t can_bo_hold[2];   /* 1 = this bus-off episode; skip TX */
 
-static Uint16 can_q_push(can_module_t mod, can_dir_t dir, const can_msg_t *msg)
+static uint16_t can_q_push(can_module_t mod, can_dir_t dir, const can_msg_t *msg)
 {
-    Uint16 m;
-    Uint16 d;
+    uint16_t m;
+    uint16_t d;
 
     if ((msg == 0) || ((mod != CAN_A) && (mod != CAN_B)))
     {
@@ -30,8 +31,8 @@ static Uint16 can_q_push(can_module_t mod, can_dir_t dir, const can_msg_t *msg)
         return 0U;
     }
 
-    m = (Uint16)mod;
-    d = (Uint16)dir;
+    m = (uint16_t)mod;
+    d = (uint16_t)dir;
     if (can_q_n[m][d] >= CAN_QUEUE_LEN)
     {
         return 0U;
@@ -47,12 +48,12 @@ static Uint16 can_q_push(can_module_t mod, can_dir_t dir, const can_msg_t *msg)
     return 1U;
 }
 
-static Uint16 can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
+static uint16_t can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
 {
-    Uint16 m;
-    Uint16 d;
-    Uint16 lock;
-    Uint16 ok;
+    uint16_t m;
+    uint16_t d;
+    uint16_t lock;
+    uint16_t ok;
 
     if ((msg == 0) || ((mod != CAN_A) && (mod != CAN_B)))
     {
@@ -63,10 +64,10 @@ static Uint16 can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
         return 0U;
     }
 
-    m = (Uint16)mod;
-    d = (Uint16)dir;
+    m = (uint16_t)mod;
+    d = (uint16_t)dir;
     /* RX: ISR push vs main pop. Do not EINT in can_q_push (RX ISR). */
-    lock = (d == (Uint16)CAN_RX) ? 1U : 0U;
+    lock = (d == (uint16_t)CAN_RX) ? 1U : 0U;
     if (lock != 0U)
     {
         DINT;
@@ -95,12 +96,12 @@ static Uint16 can_q_pop(can_module_t mod, can_dir_t dir, can_msg_t *msg)
     return ok;
 }
 
-Uint16 can_tx(can_module_t mod, const can_msg_t *msg)
+uint16_t can_tx(can_module_t mod, const can_msg_t *msg)
 {
     return can_q_push(mod, CAN_TX, msg);
 }
 
-Uint16 can_rx(can_module_t mod, can_msg_t *msg)
+uint16_t can_rx(can_module_t mod, can_msg_t *msg)
 {
     return can_q_pop(mod, CAN_RX, msg);
 }
@@ -136,10 +137,10 @@ static volatile struct LAM_REGS *can_lams(can_module_t mod)
  * cfg->mask: 1 = ID bit must match. eCAN LAM is inverted (1 = don't care).
  * AME is set only when at least one ID bit is ignored. TX does not filter.
  */
-static void can_filter_hw(const can_mbox_cfg_t *cfg, Uint32 *msgid, Uint32 *lam_val)
+static void can_filter_hw(const can_mbox_cfg_t *cfg, uint32_t *msgid, uint32_t *lam_val)
 {
-    Uint32 care;
-    Uint32 dont_care;
+    uint32_t care;
+    uint32_t dont_care;
 
     *lam_val = 0UL;
     if (cfg->dir != CAN_RX)
@@ -172,9 +173,9 @@ void can_mbox_config(const can_mbox_cfg_t *cfg)
     volatile struct MBOX *mbox;
     volatile union CANLAM_REG *lam;
     struct ECAN_REGS shadow;
-    Uint32 mbox_bit;
-    Uint32 msgid;
-    Uint32 lam_val;
+    uint32_t mbox_bit;
+    uint32_t msgid;
+    uint32_t lam_val;
 
     if ((cfg == 0) || (cfg->mailbox > 31U))
     {
@@ -208,7 +209,7 @@ void can_mbox_config(const can_mbox_cfg_t *cfg)
     can_filter_hw(cfg, &msgid, &lam_val);
 
     mbox->MSGID.all = msgid;
-    mbox->MSGCTRL.all = (Uint32)((cfg->dlc > 8U) ? 8U : cfg->dlc);
+    mbox->MSGCTRL.all = (uint32_t)((cfg->dlc > 8U) ? 8U : cfg->dlc);
     lam->all = lam_val;
 
     shadow.CANMD.all = regs->CANMD.all;
@@ -258,13 +259,13 @@ static void can_rx_to_queue(can_module_t mod)
     volatile struct ECAN_REGS *regs;
     volatile struct MBOX *mbox;
     struct ECAN_REGS shadow;
-    Uint32 rmp;
-    Uint32 mask;
-    Uint32 msgid;
-    Uint32 mdl;
-    Uint32 mdh;
-    Uint16 i;
-    Uint16 dlc;
+    uint32_t rmp;
+    uint32_t mask;
+    uint32_t msgid;
+    uint32_t mdl;
+    uint32_t mdh;
+    uint16_t i;
+    uint16_t dlc;
     can_msg_t msg;
 
     regs = can_regs(mod);
@@ -284,7 +285,7 @@ static void can_rx_to_queue(can_module_t mod)
 
         mbox = &can_mboxes(mod)->MBOX0 + i;
         msgid = mbox->MSGID.all;
-        dlc = (Uint16)(mbox->MSGCTRL.all & 0x0FUL);
+        dlc = (uint16_t)(mbox->MSGCTRL.all & 0x0FUL);
         mdl = mbox->MDL.all;
         mdh = mbox->MDH.all;
 
@@ -306,14 +307,14 @@ static void can_rx_to_queue(can_module_t mod)
             msg.id = (msgid >> 18) & 0x7FFUL;
         }
 
-        msg.data[0] = (Uint16)((mdl >> 24) & 0x00FFUL);
-        msg.data[1] = (Uint16)((mdl >> 16) & 0x00FFUL);
-        msg.data[2] = (Uint16)((mdl >> 8) & 0x00FFUL);
-        msg.data[3] = (Uint16)(mdl & 0x00FFUL);
-        msg.data[4] = (Uint16)((mdh >> 24) & 0x00FFUL);
-        msg.data[5] = (Uint16)((mdh >> 16) & 0x00FFUL);
-        msg.data[6] = (Uint16)((mdh >> 8) & 0x00FFUL);
-        msg.data[7] = (Uint16)(mdh & 0x00FFUL);
+        msg.data[0] = (uint16_t)((mdl >> 24) & 0x00FFUL);
+        msg.data[1] = (uint16_t)((mdl >> 16) & 0x00FFUL);
+        msg.data[2] = (uint16_t)((mdl >> 8) & 0x00FFUL);
+        msg.data[3] = (uint16_t)(mdl & 0x00FFUL);
+        msg.data[4] = (uint16_t)((mdh >> 24) & 0x00FFUL);
+        msg.data[5] = (uint16_t)((mdh >> 16) & 0x00FFUL);
+        msg.data[6] = (uint16_t)((mdh >> 8) & 0x00FFUL);
+        msg.data[7] = (uint16_t)(mdh & 0x00FFUL);
 
         (void)can_q_push(mod, CAN_RX, &msg);
 
@@ -357,9 +358,9 @@ static void can_rx_int_enable(void)
     IER |= M_INT9;
 }
 
-static Uint32 can_pack_msgid(const can_msg_t *msg)
+static uint32_t can_pack_msgid(const can_msg_t *msg)
 {
-    Uint32 msgid;
+    uint32_t msgid;
 
     if (msg->ide == CAN_ID_EXT)
     {
@@ -373,11 +374,11 @@ static Uint32 can_pack_msgid(const can_msg_t *msg)
     return msgid;
 }
 
-static Uint16 can_tx_mbox_free(can_module_t mod, Uint16 mailbox)
+static uint16_t can_tx_mbox_free(can_module_t mod, uint16_t mailbox)
 {
     volatile struct ECAN_REGS *regs;
     struct ECAN_REGS shadow;
-    Uint32 mask;
+    uint32_t mask;
 
     regs = can_regs(mod);
     mask = 1UL << mailbox;
@@ -397,13 +398,13 @@ static Uint16 can_tx_mbox_free(can_module_t mod, Uint16 mailbox)
     return 1U;
 }
 
-static void can_tx_mbox_load(can_module_t mod, Uint16 mailbox, const can_msg_t *msg)
+static void can_tx_mbox_load(can_module_t mod, uint16_t mailbox, const can_msg_t *msg)
 {
     volatile struct ECAN_REGS *regs;
     volatile struct MBOX *mbox;
     struct ECAN_REGS shadow;
-    Uint32 mask;
-    Uint16 dlc;
+    uint32_t mask;
+    uint16_t dlc;
 
     regs = can_regs(mod);
     mbox = &can_mboxes(mod)->MBOX0 + mailbox;
@@ -415,15 +416,15 @@ static void can_tx_mbox_load(can_module_t mod, Uint16 mailbox, const can_msg_t *
     regs->CANME.all = shadow.CANME.all;
 
     mbox->MSGID.all = can_pack_msgid(msg);
-    mbox->MSGCTRL.all = (Uint32)dlc;
-    mbox->MDL.all = ((Uint32)msg->data[0] << 24) |
-                    ((Uint32)msg->data[1] << 16) |
-                    ((Uint32)msg->data[2] << 8) |
-                    (Uint32)msg->data[3];
-    mbox->MDH.all = ((Uint32)msg->data[4] << 24) |
-                    ((Uint32)msg->data[5] << 16) |
-                    ((Uint32)msg->data[6] << 8) |
-                    (Uint32)msg->data[7];
+    mbox->MSGCTRL.all = (uint32_t)dlc;
+    mbox->MDL.all = ((uint32_t)msg->data[0] << 24) |
+                    ((uint32_t)msg->data[1] << 16) |
+                    ((uint32_t)msg->data[2] << 8) |
+                    (uint32_t)msg->data[3];
+    mbox->MDH.all = ((uint32_t)msg->data[4] << 24) |
+                    ((uint32_t)msg->data[5] << 16) |
+                    ((uint32_t)msg->data[6] << 8) |
+                    (uint32_t)msg->data[7];
 
     shadow.CANME.all = regs->CANME.all;
     shadow.CANME.all |= mask;
@@ -433,9 +434,9 @@ static void can_tx_mbox_load(can_module_t mod, Uint16 mailbox, const can_msg_t *
     regs->CANTRS.all = shadow.CANTRS.all;
 }
 
-static Uint16 can_write_try_mbox(can_module_t mod, Uint16 m)
+static uint16_t can_write_try_mbox(can_module_t mod, uint16_t m)
 {
-    Uint16 i;
+    uint16_t i;
 
     for (i = CAN_TX_MBOX_FIRST; i < (CAN_TX_MBOX_FIRST + CAN_TX_MBOX_COUNT); i++)
     {
@@ -457,9 +458,9 @@ static void can_busoff_step(can_module_t mod)
 {
     volatile struct ECAN_REGS *regs;
     struct ECAN_REGS shadow;
-    Uint16 m;
+    uint16_t m;
 
-    m = (Uint16)mod;
+    m = (uint16_t)mod;
     regs = can_regs(mod);
     shadow.CANES.all = regs->CANES.all;
     if (shadow.CANES.bit.BO == 0U)
@@ -491,13 +492,13 @@ static void can_busoff_step(can_module_t mod)
 
 void can_write(can_module_t mod)
 {
-    Uint16 m;
+    uint16_t m;
 
     if ((mod != CAN_A) && (mod != CAN_B))
     {
         return;
     }
-    m = (Uint16)mod;
+    m = (uint16_t)mod;
 
     can_busoff_step(mod);
     if (can_bo_hold[m] != 0U)
@@ -531,7 +532,7 @@ void can_write(can_module_t mod)
 static void can_mbox_init(void)
 {
     can_mbox_cfg_t cfg;
-    Uint16 i;
+    uint16_t i;
 
     cfg.dir = CAN_TX;
     cfg.ide = CAN_ID_STD;

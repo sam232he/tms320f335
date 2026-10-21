@@ -2,6 +2,7 @@
  * main.c
  */
 #include "init_interface.h"
+#include "application/application_init/application_initialize.h"
 #include "can_send.h"
 #include "adc_test.h"
 #include "gpio_test.h"
@@ -16,6 +17,7 @@ volatile Uint16 eeprom_test_run = 0;
 int main(void)
 {
     system_init();
+    application_initialize();
 
     for (;;)
     {

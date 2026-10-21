@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalPosition.c
  *
@@ -29,7 +30,7 @@ typedef struct {
 #endif /* typedef_GimbalADRCPosition */
 
 /* Variable Definitions */
-static boolean_T Obj_not_empty;
+static bool Obj_not_empty;
 
 /* Function Declarations */
 static double rt_powd_snf(double u0, double u1);
@@ -88,13 +89,13 @@ static double rt_powd_snf(double u0, double u1)
 /*
  * Arguments    : const struct0_T *ObservationStruct
  *                const struct1_T *InitStruct
- *                boolean_T ResetFlag
+ *                bool ResetFlag
  *                struct3_T *OutStruct
  * Return Type  : void
  */
 void callNextStepGimbalPosition(const struct0_T *ObservationStruct,
                                 const struct1_T *InitStruct,
-                                boolean_T ResetFlag, struct3_T *OutStruct)
+                                bool ResetFlag, struct3_T *OutStruct)
 {
   static GimbalADRCPosition Obj;
   double Jeq;

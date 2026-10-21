@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef PWM_TEST_H
 #define PWM_TEST_H
 
@@ -9,7 +10,7 @@
  *   PWM5 = DSP_EPWM2 (GPIO9  EPWM5B = 2A, GPIO8  EPWM5A = 2B) and ADC SOCA
  * pwm_test_duty[PWM_5] / pwm_test_duty[PWM_6] are duty percent (0..100).
  */
-extern volatile Uint16 pwm_test_duty[7];
+extern volatile uint16_t pwm_test_duty[7];
 
 void pwm_test(void);
 

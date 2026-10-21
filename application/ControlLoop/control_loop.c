@@ -1,4 +1,6 @@
+#include <stdint.h>
 #include "control_loop.h"
+#include "../control_command/control_command.h"
 #include "../../driver_interface/encoder/encoder_interface.h"
 #include "../../driver_interface/gyro/gyro_interface.h"
 #include "position/callNextStepGimbalPosition_initialize.h"
@@ -10,31 +12,32 @@ static control_loop_observation_t control_loop_input_data = {0};
 static control_loop_output_t control_loop_output_data = {0};
 static double control_loop_actuator_data[2] = {0.0, 0.0};
 static control_loop_parameters_t control_loop_parameters_data = {0};
+static control_loop_mode_t control_loop_last_mode = CONTROL_LOOP_POSITION;
 
 /* A SZ35T6Y-21 encoder is a 21-bit absolute, one-revolution count. */
 #define CONTROL_LOOP_ENCODER_COUNTS_PER_REV  2097152.0
 #define CONTROL_LOOP_GYRO_LSB_TO_DEG_S       1.0
 #define CONTROL_LOOP_ACCEL_LSB_TO_UNIT       1.0
 
-static double control_loop_encoder_to_deg(Uint32 counts)
+static double control_loop_encoder_to_deg(uint32_t counts)
 {
     return ((double)counts * 360.0) /
            CONTROL_LOOP_ENCODER_COUNTS_PER_REV;
 }
 
-static double control_loop_signed16(Uint16 raw)
+static double control_loop_signed16(uint16_t raw)
 {
-    long value;
+    int32_t value;
 
-    value = (long)raw;
+    value = (int32_t)raw;
     if ((raw & 0x8000U) != 0U)
     {
-        value -= 65536L;
+        value -= (int32_t)65536;
     }
     return (double)value;
 }
 
-static Uint16 control_loop_actuator_to_duty(double actuator)
+static uint16_t control_loop_actuator_to_duty(double actuator)
 {
     double duty;
 
@@ -49,7 +52,7 @@ static Uint16 control_loop_actuator_to_duty(double actuator)
 
     /* Signed percentage to complementary H-bridge duty. */
     duty = 50.0 + (0.5 * actuator);
-    return (Uint16)(duty + 0.5);
+    return (uint16_t)(duty + 0.5);
 }
 
 static void control_loop_update_pwm_output(void)
@@ -64,6 +67,8 @@ void control_loop_initialize(void)
 {
     callNextStepGimbalPosition_initialize();
     callNextStepGimbalVelocity_initialize();
+
+    control_loop_last_mode = CONTROL_LOOP_POSITION;
 
     /* Test defaults; replace these here when final values are available. */
     control_loop_parameters_data.average_enc_inner_deg = 0.0;
@@ -136,6 +141,25 @@ void control_loop_input(void)
     control_loop_input_data.accel[2] =
         control_loop_signed16(gyro->acc_z) * CONTROL_LOOP_ACCEL_LSB_TO_UNIT;
 
+    if (control_command_mode() == CONTROL_LOOP_POSITION)
+    {
+        control_loop_input_data.position_ref_deg[0] =
+            control_command_inner_angle();
+        control_loop_input_data.position_ref_deg[1] =
+            control_command_outer_angle();
+        control_loop_input_data.position_ref_rate_deg_s[0] = 0.0;
+        control_loop_input_data.position_ref_rate_deg_s[1] = 0.0;
+    }
+    else
+    {
+        control_loop_input_data.velocity_ref_deg_s[0] =
+            control_command_inner_angle();
+        control_loop_input_data.velocity_ref_deg_s[1] =
+            control_command_outer_angle();
+        control_loop_input_data.velocity_ref_accel_deg_s2[0] = 0.0;
+        control_loop_input_data.velocity_ref_accel_deg_s2[1] = 0.0;
+    }
+
 }
 
 void control_loop_output(control_loop_output_t *output)
@@ -151,8 +175,14 @@ control_loop_parameters_t *control_loop_parameters(void)
     return &control_loop_parameters_data;
 }
 
-void control_loop_run(control_loop_mode_t mode, unsigned char reset)
+void control_loop_run(control_loop_mode_t mode, uint16_t reset)
 {
+    mode = control_command_mode();
+    if (mode != control_loop_last_mode)
+    {
+        reset = 1U;
+        control_loop_last_mode = mode;
+    }
     control_loop_input();
 
     if (mode == CONTROL_LOOP_VELOCITY)

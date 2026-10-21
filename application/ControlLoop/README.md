@@ -5,23 +5,36 @@ their generated `struct0_T` types cannot collide. Application code should use
 `control_loop.h` instead of including generated headers directly.
 
 Call `control_loop_run()` at the configured control period. Inputs are in
-degrees, degrees/second, and
-degrees/second2 as named. `actuator[0]` and `actuator[1]` are the generated
-actuation values; mapping those values to PWM duty and enabling the drives is
-application/hardware policy and is intentionally not done here.
+degrees, degrees/second, and degrees/second2 as named. The public output is
+already converted to H-bridge PWM duty in `pwm_duty[2]`.
 
 The first call initializes the generated state. Pass a nonzero `reset` when
 changing mode or reloading parameters. Parameters must be populated with the
 validated plant and controller values before the first call; zero-filled
 parameters are not safe operating values.
 
-For application code, call `control_loop_initialize()` once, then run either
-`control_loop_run(CONTROL_LOOP_POSITION, reset)` or
-`control_loop_run(CONTROL_LOOP_VELOCITY, reset)`, and retrieve the result with
-`control_loop_output()`.
+For application code, call `control_loop_initialize()` once. Call
+`control_command_update()` once per cycle to feed the nonblocking SCI-B parser,
+then call `control_loop_run()` and retrieve the result with
+`control_loop_output()`. The command app owns the latest command; the control
+loop reads that shared command data each cycle.
 
 `control_loop_run()` automatically reads the encoder and IMU interfaces before
 executing the selected controller.
+
+SCI-B commands are parsed by the separate `application/control_command` app.
+Call `control_command_update()` once per application cycle before
+`control_loop_run()`. The command app uses this binary frame:
+
+```text
+0xAA | 0xBB | mode | inner_value_L | inner_value_H | outer_value_L | outer_value_H
+```
+
+`mode = 0` selects position and `mode = 1` selects velocity. The two values are
+signed 16-bit little-endian values scaled by 10: transmit `123` for `12.3`
+degrees or degrees/second. Do not run `sci_test()` on SCI-B at the same time,
+because it consumes the same RX queue. The parser consumes at most one byte per
+call and contains no blocking `while` loop.
 
 The output contains the converted H-bridge duty in `pwm_duty[2]`. The private
 signed controller command is used internally for conversion. The conversion is

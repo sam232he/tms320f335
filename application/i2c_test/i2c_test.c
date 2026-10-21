@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "i2c_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
@@ -23,17 +24,17 @@ typedef enum
 } i2c_test_st_t;
 
 static i2c_test_st_t i2c_test_st;
-static Uint32 i2c_test_last_tick;
-static Uint16 i2c_test_seed;
+static uint32_t i2c_test_last_tick;
+static uint16_t i2c_test_seed;
 static i2c_msg_t i2c_test_tx_msg;
 
-volatile Uint16 i2c_test_data[8];
-volatile Uint16 i2c_test_tx_data[4];
-volatile Uint16 i2c_test_rx_data[4];
+volatile uint16_t i2c_test_data[8];
+volatile uint16_t i2c_test_tx_data[4];
+volatile uint16_t i2c_test_rx_data[4];
 
 static void i2c_test_fill_write(void)
 {
-    Uint16 i;
+    uint16_t i;
 
     i2c_test_tx_msg.dir = I2C_TX;
     i2c_test_tx_msg.slave = I2C_EEPROM_ADDR;
@@ -41,7 +42,7 @@ static void i2c_test_fill_write(void)
     i2c_test_tx_msg.n = I2C_TEST_N;
     for (i = 0U; i < I2C_TEST_N; i++)
     {
-        i2c_test_tx_msg.data[i] = (Uint16)((i2c_test_seed + i) & 0xFFU);
+        i2c_test_tx_msg.data[i] = (uint16_t)((i2c_test_seed + i) & 0xFFU);
         i2c_test_tx_data[i] = i2c_test_tx_msg.data[i];
     }
     i2c_test_data[I2C_OBS_TX0] = i2c_test_tx_msg.data[0];
@@ -49,8 +50,8 @@ static void i2c_test_fill_write(void)
 
 static void i2c_test_compare(const i2c_msg_t *rx)
 {
-    Uint16 i;
-    Uint16 ok;
+    uint16_t i;
+    uint16_t ok;
 
     ok = 1U;
     for (i = 0U; i < I2C_TEST_N; i++)
@@ -75,12 +76,12 @@ static void i2c_test_compare(const i2c_msg_t *rx)
 
 void i2c_test(void)
 {
-    Uint32 now;
+    uint32_t now;
     i2c_msg_t msg;
-    Uint16 i;
+    uint16_t i;
 
     now = timer_tick();
-    i2c_test_data[I2C_OBS_STATE] = (Uint16)i2c_test_st;
+    i2c_test_data[I2C_OBS_STATE] = (uint16_t)i2c_test_st;
 
     switch (i2c_test_st)
     {
@@ -149,7 +150,7 @@ void i2c_test(void)
             {
                 i2c_test_data[I2C_OBS_RX_N]++;
                 i2c_test_compare(&msg);
-                i2c_test_seed = (Uint16)((i2c_test_seed + 1U) & 0xFFU);
+                i2c_test_seed = (uint16_t)((i2c_test_seed + 1U) & 0xFFU);
                 i2c_test_last_tick = now;
                 i2c_test_st = I2C_TEST_ST_WAIT_GAP;
                 break;

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "sci_interface.h"
 #include "DSP28x_Project.h"
 
@@ -10,19 +11,19 @@ typedef enum
 static sci_write_state_t sci_write_state[SCI_COUNT];
 static sci_msg_t sci_write_held[SCI_COUNT];
 static sci_msg_t sci_q_buf[SCI_COUNT][2][SCI_QUEUE_LEN];
-static volatile Uint16 sci_q_head[SCI_COUNT][2];
-static volatile Uint16 sci_q_tail[SCI_COUNT][2];
-static volatile Uint16 sci_q_n[SCI_COUNT][2];
+static volatile uint16_t sci_q_head[SCI_COUNT][2];
+static volatile uint16_t sci_q_tail[SCI_COUNT][2];
+static volatile uint16_t sci_q_n[SCI_COUNT][2];
 
-static Uint16 sci_mod_ok(sci_module_t mod)
+static uint16_t sci_mod_ok(sci_module_t mod)
 {
-    return ((Uint16)mod < SCI_COUNT) ? 1U : 0U;
+    return ((uint16_t)mod < SCI_COUNT) ? 1U : 0U;
 }
 
-static Uint16 sci_q_push(sci_module_t mod, sci_dir_t dir, const sci_msg_t *msg)
+static uint16_t sci_q_push(sci_module_t mod, sci_dir_t dir, const sci_msg_t *msg)
 {
-    Uint16 m;
-    Uint16 d;
+    uint16_t m;
+    uint16_t d;
 
     if ((msg == 0) || (sci_mod_ok(mod) == 0U))
     {
@@ -33,8 +34,8 @@ static Uint16 sci_q_push(sci_module_t mod, sci_dir_t dir, const sci_msg_t *msg)
         return 0U;
     }
 
-    m = (Uint16)mod;
-    d = (Uint16)dir;
+    m = (uint16_t)mod;
+    d = (uint16_t)dir;
     if (sci_q_n[m][d] >= SCI_QUEUE_LEN)
     {
         return 0U;
@@ -50,12 +51,12 @@ static Uint16 sci_q_push(sci_module_t mod, sci_dir_t dir, const sci_msg_t *msg)
     return 1U;
 }
 
-static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
+static uint16_t sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
 {
-    Uint16 m;
-    Uint16 d;
-    Uint16 lock;
-    Uint16 ok;
+    uint16_t m;
+    uint16_t d;
+    uint16_t lock;
+    uint16_t ok;
 
     if ((msg == 0) || (sci_mod_ok(mod) == 0U))
     {
@@ -66,10 +67,10 @@ static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
         return 0U;
     }
 
-    m = (Uint16)mod;
-    d = (Uint16)dir;
+    m = (uint16_t)mod;
+    d = (uint16_t)dir;
     /* RX: ISR push vs main pop. Do not EINT in sci_q_push (RX ISR). */
-    lock = (d == (Uint16)SCI_RX) ? 1U : 0U;
+    lock = (d == (uint16_t)SCI_RX) ? 1U : 0U;
     if (lock != 0U)
     {
         DINT;
@@ -98,12 +99,12 @@ static Uint16 sci_q_pop(sci_module_t mod, sci_dir_t dir, sci_msg_t *msg)
     return ok;
 }
 
-Uint16 sci_tx(sci_module_t mod, const sci_msg_t *msg)
+uint16_t sci_tx(sci_module_t mod, const sci_msg_t *msg)
 {
     return sci_q_push(mod, SCI_TX, msg);
 }
 
-Uint16 sci_rx(sci_module_t mod, sci_msg_t *msg)
+uint16_t sci_rx(sci_module_t mod, sci_msg_t *msg)
 {
     return sci_q_pop(mod, SCI_RX, msg);
 }
@@ -123,8 +124,8 @@ static void sci_port_init(volatile struct SCI_REGS *regs)
     regs->SCICCR.all = 0x0007U;       /* 8 data, 1 stop, no parity, idle */
     regs->SCICTL1.all = 0x0003U;      /* RXENA + TXENA, hold SWRESET */
     regs->SCICTL2.all = 0x0000U;
-    regs->SCIHBAUD = (Uint16)SCI_BRR_HIGH;
-    regs->SCILBAUD = (Uint16)SCI_BRR_LOW;
+    regs->SCIHBAUD = (uint16_t)SCI_BRR_HIGH;
+    regs->SCILBAUD = (uint16_t)SCI_BRR_LOW;
     regs->SCIFFTX.all = 0xE040U;
     regs->SCIFFRX.all = 0x2061U;      /* RXFFIL=1, RXFFIENA, RXFFINTCLR, reset */
     regs->SCIFFCT.all = 0x0000U;
@@ -160,7 +161,7 @@ static void sci_rx_to_queue(sci_module_t mod)
 {
     volatile struct SCI_REGS *regs;
     sci_msg_t msg;
-    Uint16 raw;
+    uint16_t raw;
 
     regs = sci_regs(mod);
     while (regs->SCIFFRX.bit.RXFFST != 0U)
@@ -217,17 +218,17 @@ static void sci_rx_int_enable(void)
     IER |= (M_INT8 | M_INT9);
 }
 
-static Uint16 sci_tx_fifo_free(sci_module_t mod)
+static uint16_t sci_tx_fifo_free(sci_module_t mod)
 {
     return (sci_regs(mod)->SCIFFTX.bit.TXFFST < 16U) ? 1U : 0U;
 }
 
 static void sci_tx_load(sci_module_t mod, const sci_msg_t *msg)
 {
-    sci_regs(mod)->SCITXBUF = (Uint16)(msg->data & 0xFFU);
+    sci_regs(mod)->SCITXBUF = (uint16_t)(msg->data & 0xFFU);
 }
 
-static Uint16 sci_write_try_fifo(sci_module_t mod, Uint16 m)
+static uint16_t sci_write_try_fifo(sci_module_t mod, uint16_t m)
 {
     if (sci_tx_fifo_free(mod) != 0U)
     {
@@ -239,13 +240,13 @@ static Uint16 sci_write_try_fifo(sci_module_t mod, Uint16 m)
 
 void sci_write(sci_module_t mod)
 {
-    Uint16 m;
+    uint16_t m;
 
     if (sci_mod_ok(mod) == 0U)
     {
         return;
     }
-    m = (Uint16)mod;
+    m = (uint16_t)mod;
 
     switch (sci_write_state[m])
     {
@@ -272,7 +273,7 @@ void sci_write(sci_module_t mod)
 
 void sci_init(void)
 {
-    Uint16 i;
+    uint16_t i;
 
     sci_port_init(&SciaRegs);
     sci_port_init(&ScibRegs);

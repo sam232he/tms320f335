@@ -1,8 +1,9 @@
+#include <stdint.h>
 #include "timer_interface.h"
 #include "DSP28x_Project.h"
 
 /* COFF ABI does not zero .ebss. Explicit init puts this in .cinit. */
-static volatile Uint32 timer_ticks = 0UL;
+static volatile uint32_t timer_ticks = 0UL;
 
 interrupt void timer0_isr(void)
 {
@@ -33,7 +34,7 @@ void timer_init(void)
     StartCpuTimer0();
 }
 
-Uint32 timer_tick(void)
+uint32_t timer_tick(void)
 {
     return timer_ticks;
 }

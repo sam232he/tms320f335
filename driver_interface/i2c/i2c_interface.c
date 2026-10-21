@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "i2c_interface.h"
 #include "DSP28x_Project.h"
 
@@ -24,25 +25,25 @@ typedef enum
     I2C_XFER_NEED_RETRY
 } i2c_xfer_st_t;
 
-static volatile Uint16 i2c_xfer_st;
-static volatile Uint16 i2c_nack_n;
-static volatile Uint16 i2c_nack_hit;  /* ARDY saw NACK; SCD must not treat as success */
+static volatile uint16_t i2c_xfer_st;
+static volatile uint16_t i2c_nack_n;
+static volatile uint16_t i2c_nack_hit;  /* ARDY saw NACK; SCD must not treat as success */
 static i2c_msg_t i2c_held;
 static i2c_msg_t i2c_cmd_buf[I2C_QUEUE_LEN];
-static Uint16 i2c_cmd_head;
-static Uint16 i2c_cmd_tail;
-static Uint16 i2c_cmd_n;
+static uint16_t i2c_cmd_head;
+static uint16_t i2c_cmd_tail;
+static uint16_t i2c_cmd_n;
 static i2c_msg_t i2c_rx_buf[I2C_QUEUE_LEN];
-static Uint16 i2c_rx_head;
-static Uint16 i2c_rx_tail;
-static Uint16 i2c_rx_n;
+static uint16_t i2c_rx_head;
+static uint16_t i2c_rx_tail;
+static uint16_t i2c_rx_n;
 
-static Uint16 i2c_mod_ok(i2c_module_t mod)
+static uint16_t i2c_mod_ok(i2c_module_t mod)
 {
-    return ((Uint16)mod < I2C_COUNT) ? 1U : 0U;
+    return ((uint16_t)mod < I2C_COUNT) ? 1U : 0U;
 }
 
-static Uint16 i2c_msg_ok(const i2c_msg_t *msg)
+static uint16_t i2c_msg_ok(const i2c_msg_t *msg)
 {
     if (msg == 0)
     {
@@ -59,7 +60,7 @@ static Uint16 i2c_msg_ok(const i2c_msg_t *msg)
     return 1U;
 }
 
-static Uint16 i2c_cmd_push(const i2c_msg_t *msg)
+static uint16_t i2c_cmd_push(const i2c_msg_t *msg)
 {
     if (i2c_cmd_n >= I2C_QUEUE_LEN)
     {
@@ -75,7 +76,7 @@ static Uint16 i2c_cmd_push(const i2c_msg_t *msg)
     return 1U;
 }
 
-static Uint16 i2c_cmd_pop(i2c_msg_t *msg)
+static uint16_t i2c_cmd_pop(i2c_msg_t *msg)
 {
     if (i2c_cmd_n == 0U)
     {
@@ -91,7 +92,7 @@ static Uint16 i2c_cmd_pop(i2c_msg_t *msg)
     return 1U;
 }
 
-static Uint16 i2c_rx_push(const i2c_msg_t *msg)
+static uint16_t i2c_rx_push(const i2c_msg_t *msg)
 {
     if (i2c_rx_n >= I2C_QUEUE_LEN)
     {
@@ -107,7 +108,7 @@ static Uint16 i2c_rx_push(const i2c_msg_t *msg)
     return 1U;
 }
 
-static Uint16 i2c_rx_pop(i2c_msg_t *msg)
+static uint16_t i2c_rx_pop(i2c_msg_t *msg)
 {
     if (i2c_rx_n == 0U)
     {
@@ -123,7 +124,7 @@ static Uint16 i2c_rx_pop(i2c_msg_t *msg)
     return 1U;
 }
 
-Uint16 i2c_tx(i2c_module_t mod, const i2c_msg_t *msg)
+uint16_t i2c_tx(i2c_module_t mod, const i2c_msg_t *msg)
 {
     if ((i2c_mod_ok(mod) == 0U) || (i2c_msg_ok(msg) == 0U))
     {
@@ -132,7 +133,7 @@ Uint16 i2c_tx(i2c_module_t mod, const i2c_msg_t *msg)
     return i2c_cmd_push(msg);
 }
 
-Uint16 i2c_rx(i2c_module_t mod, i2c_msg_t *msg)
+uint16_t i2c_rx(i2c_module_t mod, i2c_msg_t *msg)
 {
     if ((msg == 0) || (i2c_mod_ok(mod) == 0U))
     {
@@ -141,14 +142,14 @@ Uint16 i2c_rx(i2c_module_t mod, i2c_msg_t *msg)
     return i2c_rx_pop(msg);
 }
 
-Uint16 i2c_idle(void)
+uint16_t i2c_idle(void)
 {
-    return (i2c_xfer_st == (Uint16)I2C_XFER_IDLE) ? 1U : 0U;
+    return (i2c_xfer_st == (uint16_t)I2C_XFER_IDLE) ? 1U : 0U;
 }
 
-Uint16 i2c_pending(void)
+uint16_t i2c_pending(void)
 {
-    if (i2c_xfer_st != (Uint16)I2C_XFER_IDLE)
+    if (i2c_xfer_st != (uint16_t)I2C_XFER_IDLE)
     {
         return 1U;
     }
@@ -159,7 +160,7 @@ Uint16 i2c_pending(void)
     return 0U;
 }
 
-static Uint16 i2c_hw_ready(Uint16 check_bb)
+static uint16_t i2c_hw_ready(uint16_t check_bb)
 {
     if (I2caRegs.I2CMDR.bit.STP == 1U)
     {
@@ -181,9 +182,9 @@ static void i2c_fifo_reset(void)
     I2caRegs.I2CFFRX.bit.RXFFINTCLR = 1;
 }
 
-static Uint16 i2c_hw_start_write(void)
+static uint16_t i2c_hw_start_write(void)
 {
-    Uint16 i;
+    uint16_t i;
 
     if (i2c_hw_ready(1U) == 0U)
     {
@@ -192,7 +193,7 @@ static Uint16 i2c_hw_start_write(void)
 
     i2c_fifo_reset();
     I2caRegs.I2CSAR = i2c_held.slave;
-    I2caRegs.I2CCNT = (Uint16)(i2c_held.n + 2U);
+    I2caRegs.I2CCNT = (uint16_t)(i2c_held.n + 2U);
     I2caRegs.I2CDXR = (i2c_held.mem_addr >> 8) & 0xFFU;
     I2caRegs.I2CDXR = i2c_held.mem_addr & 0xFFU;
     for (i = 0U; i < i2c_held.n; i++)
@@ -203,7 +204,7 @@ static Uint16 i2c_hw_start_write(void)
     return 1U;
 }
 
-static Uint16 i2c_hw_start_addr(void)
+static uint16_t i2c_hw_start_addr(void)
 {
     if (i2c_hw_ready(1U) == 0U)
     {
@@ -219,7 +220,7 @@ static Uint16 i2c_hw_start_addr(void)
     return 1U;
 }
 
-static Uint16 i2c_hw_start_read(void)
+static uint16_t i2c_hw_start_read(void)
 {
     if (i2c_hw_ready(0U) == 0U)
     {
@@ -237,11 +238,11 @@ static void i2c_fail_or_retry(void)
     i2c_nack_n++;
     if (i2c_nack_n >= I2C_NACK_RETRY_MAX)
     {
-        i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+        i2c_xfer_st = (uint16_t)I2C_XFER_IDLE;
     }
     else
     {
-        i2c_xfer_st = (Uint16)I2C_XFER_NEED_RETRY;
+        i2c_xfer_st = (uint16_t)I2C_XFER_NEED_RETRY;
     }
 }
 
@@ -253,7 +254,7 @@ static void i2c_start_held(void)
     {
         if (i2c_hw_start_write() != 0U)
         {
-            i2c_xfer_st = (Uint16)I2C_XFER_WRITE_BUSY;
+            i2c_xfer_st = (uint16_t)I2C_XFER_WRITE_BUSY;
         }
         else
         {
@@ -262,7 +263,7 @@ static void i2c_start_held(void)
     }
     else if (i2c_hw_start_addr() != 0U)
     {
-        i2c_xfer_st = (Uint16)I2C_XFER_ADDR_BUSY;
+        i2c_xfer_st = (uint16_t)I2C_XFER_ADDR_BUSY;
     }
     else
     {
@@ -278,24 +279,24 @@ void i2c_write(i2c_module_t mod)
         return;
     }
 
-    if (i2c_xfer_st == (Uint16)I2C_XFER_NEED_RESTART)
+    if (i2c_xfer_st == (uint16_t)I2C_XFER_NEED_RESTART)
     {
         DINT;
         if (i2c_hw_start_read() != 0U)
         {
-            i2c_xfer_st = (Uint16)I2C_XFER_READ_BUSY;
+            i2c_xfer_st = (uint16_t)I2C_XFER_READ_BUSY;
         }
         EINT;
         return;
     }
 
-    if (i2c_xfer_st == (Uint16)I2C_XFER_NEED_RETRY)
+    if (i2c_xfer_st == (uint16_t)I2C_XFER_NEED_RETRY)
     {
         i2c_start_held();
         return;
     }
 
-    if (i2c_xfer_st != (Uint16)I2C_XFER_IDLE)
+    if (i2c_xfer_st != (uint16_t)I2C_XFER_IDLE)
     {
         return;
     }
@@ -311,9 +312,9 @@ void i2c_write(i2c_module_t mod)
 
 interrupt void i2c_int1a_isr(void)
 {
-    Uint16 src;
-    Uint16 i;
-    Uint16 nacked;
+    uint16_t src;
+    uint16_t i;
+    uint16_t nacked;
 
     src = I2caRegs.I2CISRC.bit.INTCODE;
 
@@ -327,7 +328,7 @@ interrupt void i2c_int1a_isr(void)
             I2caRegs.I2CSTR.all = I2C_CLR_NACK_BIT;
         }
 
-        if (i2c_xfer_st == (Uint16)I2C_XFER_WRITE_BUSY)
+        if (i2c_xfer_st == (uint16_t)I2C_XFER_WRITE_BUSY)
         {
             if (nacked != 0U)
             {
@@ -335,15 +336,15 @@ interrupt void i2c_int1a_isr(void)
             }
             else
             {
-                i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+                i2c_xfer_st = (uint16_t)I2C_XFER_IDLE;
             }
         }
-        else if (i2c_xfer_st == (Uint16)I2C_XFER_ADDR_BUSY)
+        else if (i2c_xfer_st == (uint16_t)I2C_XFER_ADDR_BUSY)
         {
             /* Stop here only after ARDY NACK commanded STP. Retry later. */
             i2c_fail_or_retry();
         }
-        else if (i2c_xfer_st == (Uint16)I2C_XFER_READ_BUSY)
+        else if (i2c_xfer_st == (uint16_t)I2C_XFER_READ_BUSY)
         {
             if ((nacked != 0U) ||
                 (I2caRegs.I2CFFRX.bit.RXFFST < i2c_held.n))
@@ -357,7 +358,7 @@ interrupt void i2c_int1a_isr(void)
                     i2c_held.data[i] = I2caRegs.I2CDRR & 0xFFU;
                 }
                 (void)i2c_rx_push(&i2c_held);
-                i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+                i2c_xfer_st = (uint16_t)I2C_XFER_IDLE;
             }
         }
     }
@@ -369,9 +370,9 @@ interrupt void i2c_int1a_isr(void)
             I2caRegs.I2CMDR.bit.STP = 1;
             I2caRegs.I2CSTR.all = I2C_CLR_NACK_BIT;
         }
-        else if (i2c_xfer_st == (Uint16)I2C_XFER_ADDR_BUSY)
+        else if (i2c_xfer_st == (uint16_t)I2C_XFER_ADDR_BUSY)
         {
-            i2c_xfer_st = (Uint16)I2C_XFER_NEED_RESTART;
+            i2c_xfer_st = (uint16_t)I2C_XFER_NEED_RESTART;
         }
     }
 
@@ -391,7 +392,7 @@ static void i2c_int_enable(void)
 
 void i2c_init(void)
 {
-    i2c_xfer_st = (Uint16)I2C_XFER_IDLE;
+    i2c_xfer_st = (uint16_t)I2C_XFER_IDLE;
     i2c_nack_n = 0U;
     i2c_nack_hit = 0U;
 

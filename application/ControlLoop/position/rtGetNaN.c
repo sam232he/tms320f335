@@ -20,7 +20,7 @@
  * Initialize rtNaN needed by the generated code.
  *  NaN is initialized as non-signaling. Assumes IEEE.
  */
-real_T rtGetNaN(void)
+double rtGetNaN(void)
 {
   return rtNaN;
 }
@@ -32,7 +32,7 @@ real_T rtGetNaN(void)
  *  Initialize rtNaNF needed by the generated code.
  *  NaN is initialized as non-signaling. Assumes IEEE
  */
-real32_T rtGetNaNF(void)
+float rtGetNaNF(void)
 {
   return rtNaNF;
 }

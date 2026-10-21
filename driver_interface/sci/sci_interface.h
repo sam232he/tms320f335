@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef SCI_INTERFACE_H
 #define SCI_INTERFACE_H
 
@@ -64,14 +65,14 @@ typedef enum
 
 typedef struct
 {
-    Uint16 data;
+    uint16_t data;
 } sci_msg_t;
 
 #define SCI_QUEUE_LEN               40U
 
 void sci_init(void);
-Uint16 sci_tx(sci_module_t mod, const sci_msg_t *msg);
-Uint16 sci_rx(sci_module_t mod, sci_msg_t *msg);
+uint16_t sci_tx(sci_module_t mod, const sci_msg_t *msg);
+uint16_t sci_rx(sci_module_t mod, sci_msg_t *msg);
 
 /*
  * Idle-loop TX: one step per call.

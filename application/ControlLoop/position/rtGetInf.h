@@ -15,10 +15,10 @@
 extern "C" {
 #endif
 
-extern real_T rtGetInf(void);
-extern real32_T rtGetInfF(void);
-extern real_T rtGetMinusInf(void);
-extern real32_T rtGetMinusInfF(void);
+extern double rtGetInf(void);
+extern float rtGetInfF(void);
+extern double rtGetMinusInf(void);
+extern float rtGetMinusInfF(void);
 
 #ifdef __cplusplus
 }

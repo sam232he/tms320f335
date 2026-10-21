@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalVelocity.c
  *
@@ -26,19 +27,19 @@ typedef struct {
 #endif /* typedef_GimbalADRCRate */
 
 /* Variable Definitions */
-static boolean_T Obj_not_empty;
+static bool Obj_not_empty;
 
 /* Function Definitions */
 /*
  * Arguments    : const struct0_T *ObservationStruct
  *                const struct1_T *InitStruct
- *                boolean_T ResetFlag
+ *                bool ResetFlag
  *                struct3_T *OutStruct
  * Return Type  : void
  */
 void callNextStepGimbalVelocity(const struct0_T *ObservationStruct,
                                 const struct1_T *InitStruct,
-                                boolean_T ResetFlag, struct3_T *OutStruct)
+                                bool ResetFlag, struct3_T *OutStruct)
 {
   static GimbalADRCRate Obj;
   double L2;

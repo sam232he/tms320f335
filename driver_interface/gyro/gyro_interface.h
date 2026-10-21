@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef GYRO_INTERFACE_H
 #define GYRO_INTERFACE_H
 
@@ -31,13 +32,13 @@ typedef enum
 
 typedef struct
 {
-    Uint16 rate_x;
-    Uint16 rate_y;
-    Uint16 rate_z;
-    Uint16 acc_x;
-    Uint16 acc_y;
-    Uint16 acc_z;
-    Uint16 temperature;
+    uint16_t rate_x;
+    uint16_t rate_y;
+    uint16_t rate_z;
+    uint16_t acc_x;
+    uint16_t acc_y;
+    uint16_t acc_z;
+    uint16_t temperature;
 } gyro_sample_t;
 
 /* Latest decoded IMU sample, owned privately by gyro_interface.c. */
@@ -52,37 +53,37 @@ const gyro_sample_t *gyro_get_sample(void);
 #define GYRO_SELFTEST_RESPONSE_LEN   8U
 #define GYRO_COMMAND_FRAME_LEN       5U
 
-/* Return 1 on success. Buffers contain one UART byte per Uint16 element. */
-typedef Uint16 (*gyro_uart_transaction_fn)(const Uint16 *tx,
-                                           Uint16 tx_len,
-                                           Uint16 *rx,
-                                           Uint16 rx_capacity,
-                                           Uint16 *rx_len);
+/* Return 1 on success. Buffers contain one UART byte per uint16_t element. */
+typedef uint16_t (*gyro_uart_transaction_fn)(const uint16_t *tx,
+                                           uint16_t tx_len,
+                                           uint16_t *rx,
+                                           uint16_t rx_capacity,
+                                           uint16_t *rx_len);
 
 /* Return 1 when the complete command was accepted by the UART driver. */
-typedef Uint16 (*gyro_uart_send_fn)(const Uint16 *tx, Uint16 tx_len);
+typedef uint16_t (*gyro_uart_send_fn)(const uint16_t *tx, uint16_t tx_len);
 
 /* Look up the ASIC and register address for one measurement. */
 gyro_asic_t gyro_register_asic(gyro_register_t reg);
-Uint16 gyro_register_address(gyro_register_t reg);
+uint16_t gyro_register_address(gyro_register_t reg);
 
 /* Build commands defined by the IMU protocol. Return frame length, or 0. */
-Uint16 gyro_build_data_request(Uint16 periodic, Uint16 *frame);
-Uint16 gyro_build_register_read_request(Uint16 address, Uint16 *frame);
-Uint16 gyro_build_selftest_request(Uint16 *frame);
+uint16_t gyro_build_data_request(uint16_t periodic, uint16_t *frame);
+uint16_t gyro_build_register_read_request(uint16_t address, uint16_t *frame);
+uint16_t gyro_build_selftest_request(uint16_t *frame);
 
 /* Send PD once; the IMU then streams data frames periodically. */
-Uint16 gyro_start_periodic(gyro_uart_send_fn send);
+uint16_t gyro_start_periodic(gyro_uart_send_fn send);
 
 /* Decode responses. Return 1 when framing and fixed fields are valid. */
-Uint16 gyro_parse_data_frame(const Uint16 *frame, gyro_sample_t *sample);
-Uint16 gyro_parse_register_response(const Uint16 *frame,
-                                    Uint16 *address,
-                                    Uint16 *value);
-Uint16 gyro_parse_selftest_response(const Uint16 *frame, Uint16 *result);
+uint16_t gyro_parse_data_frame(const uint16_t *frame, gyro_sample_t *sample);
+uint16_t gyro_parse_register_response(const uint16_t *frame,
+                                    uint16_t *address,
+                                    uint16_t *value);
+uint16_t gyro_parse_selftest_response(const uint16_t *frame, uint16_t *result);
 
 /* Request one data frame through the caller-provided UART transport. */
-Uint16 gyro_read_sample(gyro_uart_transaction_fn transaction,
+uint16_t gyro_read_sample(gyro_uart_transaction_fn transaction,
                         gyro_sample_t *sample);
 
 #endif /* GYRO_INTERFACE_H */

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef DRIVE_INTERFACE_H
 #define DRIVE_INTERFACE_H
 
@@ -35,10 +36,10 @@
 #define DRIVE_2                     1U      /* OUT_C/D, PWM_5, RESET_CD N/C */
 
 void drive_init(void);
-Uint16 drive_enable(Uint16 motor);              /* 1 = RESET released */
-Uint16 drive_disable(Uint16 motor);             /* 1 = RESET asserted */
-void drive_set_duty(Uint16 motor, Uint16 duty); /* 0..100 -> pwm_set_duty */
-Uint16 drive_fault(void);                       /* 1 = FAULT pin low */
-Uint16 drive_otw(void);                         /* 1 = OTW pin low */
+uint16_t drive_enable(uint16_t motor);              /* 1 = RESET released */
+uint16_t drive_disable(uint16_t motor);             /* 1 = RESET asserted */
+void drive_set_duty(uint16_t motor, uint16_t duty); /* 0..100 -> pwm_set_duty */
+uint16_t drive_fault(void);                       /* 1 = FAULT pin low */
+uint16_t drive_otw(void);                         /* 1 = OTW pin low */
 
 #endif /* DRIVE_INTERFACE_H */

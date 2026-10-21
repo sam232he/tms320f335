@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef I2C_INTERFACE_H
 #define I2C_INTERFACE_H
 
@@ -76,17 +77,17 @@ typedef enum
 typedef struct
 {
     i2c_dir_t dir;
-    Uint16 slave;                   /* 7-bit */
-    Uint16 mem_addr;                /* 16-bit CAT24C256 word address */
-    Uint16 n;                       /* 1 .. I2C_MAX_BYTES */
-    Uint16 data[I2C_MAX_BYTES];
+    uint16_t slave;                   /* 7-bit */
+    uint16_t mem_addr;                /* 16-bit CAT24C256 word address */
+    uint16_t n;                       /* 1 .. I2C_MAX_BYTES */
+    uint16_t data[I2C_MAX_BYTES];
 } i2c_msg_t;
 
 void i2c_init(void);
-Uint16 i2c_tx(i2c_module_t mod, const i2c_msg_t *msg);
-Uint16 i2c_rx(i2c_module_t mod, i2c_msg_t *msg);
-Uint16 i2c_idle(void);
-Uint16 i2c_pending(void);           /* 1 = xfer in progress or cmd queued */
+uint16_t i2c_tx(i2c_module_t mod, const i2c_msg_t *msg);
+uint16_t i2c_rx(i2c_module_t mod, i2c_msg_t *msg);
+uint16_t i2c_idle(void);
+uint16_t i2c_pending(void);           /* 1 = xfer in progress or cmd queued */
 
 /*
  * Idle-loop pump: one step per call.

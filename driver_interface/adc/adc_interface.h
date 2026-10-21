@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef ADC_INTERFACE_H
 #define ADC_INTERFACE_H
 
@@ -70,7 +71,7 @@ typedef enum
 #define ADC_SLOT_LIST               ADC_CH_A0, ADC_CH_A1, ADC_CH_B0
 
 void adc_init(void);
-Uint16 adc_read(adc_ch_t ch);           /* last 12-bit result, 0 .. 4095 */
-float adc_pin_voltage(Uint16 adc_code); /* adc_v = adc_code * 3.0 / 4096.0 */
+uint16_t adc_read(adc_ch_t ch);           /* last 12-bit result, 0 .. 4095 */
+float adc_pin_voltage(uint16_t adc_code); /* adc_v = adc_code * 3.0 / 4096.0 */
 
 #endif /* ADC_INTERFACE_H */

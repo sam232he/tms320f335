@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef CAN_INTERFACE_H
 #define CAN_INTERFACE_H
 
@@ -24,22 +25,22 @@ typedef enum
 typedef struct
 {
     can_module_t module;
-    Uint16 mailbox;     /* 0 .. 31 */
+    uint16_t mailbox;     /* 0 .. 31 */
     can_dir_t dir;
     can_id_type_t ide;
-    Uint32 id;          /* 11-bit or 29-bit */
-    Uint32 mask;        /* RX: 1 = ID bit must match, 0 = ignore */
-    Uint16 dlc;         /* 0 .. 8 */
-    Uint16 enable;
+    uint32_t id;          /* 11-bit or 29-bit */
+    uint32_t mask;        /* RX: 1 = ID bit must match, 0 = ignore */
+    uint16_t dlc;         /* 0 .. 8 */
+    uint16_t enable;
 } can_mbox_cfg_t;
 
 typedef struct
 {
-    Uint32 id;
+    uint32_t id;
     can_id_type_t ide;
-    Uint16 dlc;
-    Uint16 data[8];
-    Uint16 mailbox;
+    uint16_t dlc;
+    uint16_t data[8];
+    uint16_t mailbox;
 } can_msg_t;
 
 #define CAN_QUEUE_LEN       20U
@@ -47,8 +48,8 @@ typedef struct
 #define CAN_TX_MBOX_COUNT   10U   /* mailboxes 0 .. 9 */
 
 void can_init(void);
-Uint16 can_tx(can_module_t mod, const can_msg_t *msg);
-Uint16 can_rx(can_module_t mod, can_msg_t *msg);
+uint16_t can_tx(can_module_t mod, const can_msg_t *msg);
+uint16_t can_rx(can_module_t mod, can_msg_t *msg);
 void can_mbox_config(const can_mbox_cfg_t *cfg);
 
 /*

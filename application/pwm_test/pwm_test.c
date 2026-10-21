@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "pwm_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
@@ -7,8 +8,8 @@
 typedef struct
 {
     pwm_module_t mod;
-    Uint16 duty;
-    Uint16 up;          /* 1 = ramp toward 100%, 0 = ramp toward 0% */
+    uint16_t duty;
+    uint16_t up;          /* 1 = ramp toward 100%, 0 = ramp toward 0% */
 } pwm_test_ch_t;
 
 /* Staggered start so each pin has a different duty at any instant. */
@@ -18,9 +19,9 @@ static pwm_test_ch_t pwm_test_ch[] =
     { PWM_5, 50U, 0U }  /* DSP_EPWM2_A/B = EPWM5B/A, GPIO9/8   */
 };
 
-static Uint32 pwm_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
+static uint32_t pwm_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
-volatile Uint16 pwm_test_duty[7];
+volatile uint16_t pwm_test_duty[7];
 
 static void pwm_test_advance(pwm_test_ch_t *ch)
 {
@@ -49,9 +50,9 @@ static void pwm_test_advance(pwm_test_ch_t *ch)
 
 void pwm_test(void)
 {
-    Uint32 now;
-    Uint16 i;
-    Uint16 n;
+    uint32_t now;
+    uint16_t i;
+    uint16_t n;
 
     now = timer_tick();
     if ((now - pwm_test_last_tick) < 10UL) /* 10 ms */
@@ -60,7 +61,7 @@ void pwm_test(void)
     }
     pwm_test_last_tick = now;
 
-    n = (Uint16)(sizeof(pwm_test_ch) / sizeof(pwm_test_ch[0]));
+    n = (uint16_t)(sizeof(pwm_test_ch) / sizeof(pwm_test_ch[0]));
     for (i = 0U; i < n; i++)
     {
         pwm_set_duty(pwm_test_ch[i].mod, pwm_test_ch[i].duty);

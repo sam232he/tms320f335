@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "gyro_interface.h"
 
 static gyro_sample_t gyro_latest_sample = {
@@ -28,7 +29,7 @@ gyro_asic_t gyro_register_asic(gyro_register_t reg)
     }
 }
 
-Uint16 gyro_register_address(gyro_register_t reg)
+uint16_t gyro_register_address(gyro_register_t reg)
 {
     switch (reg)
     {
@@ -43,31 +44,31 @@ Uint16 gyro_register_address(gyro_register_t reg)
     }
 }
 
-static Uint16 gyro_byte(Uint16 value)
+static uint16_t gyro_byte(uint16_t value)
 {
     return (value <= 0xFFU) ? 1U : 0U;
 }
 
-static Uint16 gyro_u16_le(const Uint16 *frame)
+static uint16_t gyro_u16_le(const uint16_t *frame)
 {
-    return (Uint16)(frame[0] | (Uint16)(frame[1] << 8));
+    return (uint16_t)(frame[0] | (uint16_t)(frame[1] << 8));
 }
 
-Uint16 gyro_build_data_request(Uint16 periodic, Uint16 *frame)
+uint16_t gyro_build_data_request(uint16_t periodic, uint16_t *frame)
 {
     if (frame == 0)
     {
         return 0U;
     }
     frame[0] = GYRO_FRAME_START;
-    frame[1] = (periodic != 0U) ? (Uint16)'P' : (Uint16)'S';
-    frame[2] = (Uint16)'D';
+    frame[1] = (periodic != 0U) ? (uint16_t)'P' : (uint16_t)'S';
+    frame[2] = (uint16_t)'D';
     frame[3] = GYRO_FRAME_MARKER_1;
     frame[4] = GYRO_FRAME_MARKER_2;
     return GYRO_COMMAND_FRAME_LEN;
 }
 
-Uint16 gyro_build_register_read_request(Uint16 address, Uint16 *frame)
+uint16_t gyro_build_register_read_request(uint16_t address, uint16_t *frame)
 {
     if ((frame == 0) || (address > 0xFFU))
     {
@@ -75,29 +76,29 @@ Uint16 gyro_build_register_read_request(Uint16 address, Uint16 *frame)
     }
     frame[0] = GYRO_FRAME_START;
     frame[1] = address;
-    frame[2] = (Uint16)'C';
+    frame[2] = (uint16_t)'C';
     frame[3] = GYRO_FRAME_MARKER_1;
     frame[4] = GYRO_FRAME_MARKER_2;
     return GYRO_COMMAND_FRAME_LEN;
 }
 
-Uint16 gyro_build_selftest_request(Uint16 *frame)
+uint16_t gyro_build_selftest_request(uint16_t *frame)
 {
     if (frame == 0)
     {
         return 0U;
     }
     frame[0] = GYRO_FRAME_START;
-    frame[1] = (Uint16)'S';
-    frame[2] = (Uint16)'C';
+    frame[1] = (uint16_t)'S';
+    frame[2] = (uint16_t)'C';
     frame[3] = GYRO_FRAME_MARKER_1;
     frame[4] = GYRO_FRAME_MARKER_2;
     return GYRO_COMMAND_FRAME_LEN;
 }
 
-Uint16 gyro_start_periodic(gyro_uart_send_fn send)
+uint16_t gyro_start_periodic(gyro_uart_send_fn send)
 {
-    Uint16 frame[GYRO_COMMAND_FRAME_LEN];
+    uint16_t frame[GYRO_COMMAND_FRAME_LEN];
 
     if (send == 0)
     {
@@ -107,7 +108,7 @@ Uint16 gyro_start_periodic(gyro_uart_send_fn send)
     return send(frame, GYRO_COMMAND_FRAME_LEN);
 }
 
-Uint16 gyro_parse_data_frame(const Uint16 *frame, gyro_sample_t *sample)
+uint16_t gyro_parse_data_frame(const uint16_t *frame, gyro_sample_t *sample)
 {
     if ((frame == 0) || (sample == 0) ||
         !gyro_byte(frame[0]) || !gyro_byte(frame[1]) ||
@@ -136,15 +137,15 @@ Uint16 gyro_parse_data_frame(const Uint16 *frame, gyro_sample_t *sample)
     return 1U;
 }
 
-Uint16 gyro_parse_register_response(const Uint16 *frame,
-                                    Uint16 *address,
-                                    Uint16 *value)
+uint16_t gyro_parse_register_response(const uint16_t *frame,
+                                    uint16_t *address,
+                                    uint16_t *value)
 {
     if ((frame == 0) || (address == 0) || (value == 0) ||
         !gyro_byte(frame[0]) || !gyro_byte(frame[1]) ||
         !gyro_byte(frame[2]) || !gyro_byte(frame[3]) ||
         !gyro_byte(frame[4]) || !gyro_byte(frame[5]) ||
-        (frame[5] != (Uint16)'R') ||
+        (frame[5] != (uint16_t)'R') ||
         (frame[6] != GYRO_FRAME_MARKER_1) ||
         (frame[7] != GYRO_FRAME_MARKER_2))
     {
@@ -155,12 +156,12 @@ Uint16 gyro_parse_register_response(const Uint16 *frame,
     return 1U;
 }
 
-Uint16 gyro_parse_selftest_response(const Uint16 *frame, Uint16 *result)
+uint16_t gyro_parse_selftest_response(const uint16_t *frame, uint16_t *result)
 {
     if ((frame == 0) || (result == 0) ||
         !gyro_byte(frame[0]) || !gyro_byte(frame[1]) ||
         !gyro_byte(frame[2]) || !gyro_byte(frame[3]) ||
-        !gyro_byte(frame[4]) || (frame[5] != (Uint16)'C') ||
+        !gyro_byte(frame[4]) || (frame[5] != (uint16_t)'C') ||
         (frame[6] != GYRO_FRAME_MARKER_1) ||
         (frame[7] != GYRO_FRAME_MARKER_2))
     {
@@ -170,12 +171,12 @@ Uint16 gyro_parse_selftest_response(const Uint16 *frame, Uint16 *result)
     return 1U;
 }
 
-Uint16 gyro_read_sample(gyro_uart_transaction_fn transaction,
+uint16_t gyro_read_sample(gyro_uart_transaction_fn transaction,
                         gyro_sample_t *sample)
 {
-    Uint16 tx[GYRO_COMMAND_FRAME_LEN];
-    Uint16 rx[GYRO_DATA_FRAME_LEN];
-    Uint16 rx_len;
+    uint16_t tx[GYRO_COMMAND_FRAME_LEN];
+    uint16_t rx[GYRO_DATA_FRAME_LEN];
+    uint16_t rx_len;
 
     if ((transaction == 0) || (sample == 0))
     {

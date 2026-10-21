@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef MOTOR_TEST_H
 #define MOTOR_TEST_H
 
@@ -31,8 +32,8 @@ typedef enum
 typedef struct
 {
     motor_dir_e dir;
-    Uint16 duty;
-    Uint16 pwm;
+    uint16_t duty;
+    uint16_t pwm;
 } motor_t;
 
 #define MOTOR_TEST_CENTER               50U
@@ -41,9 +42,9 @@ typedef struct
 
 extern volatile motor_t motor1;
 extern volatile motor_t motor2;
-extern volatile Uint16 motor_test_rst_ab;
-extern volatile Uint16 motor_test_fault;
-extern volatile Uint16 motor_test_otw;
+extern volatile uint16_t motor_test_rst_ab;
+extern volatile uint16_t motor_test_fault;
+extern volatile uint16_t motor_test_otw;
 
 void motor_test(void);
 

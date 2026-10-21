@@ -1,3 +1,5 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include "control_loop.h"
 #include "position/callNextStepGimbalPosition.h"
 #include "position/callNextStepGimbalPosition_terminate.h"
@@ -5,7 +7,7 @@
 static void position_observation(const control_loop_observation_t *in,
                                  struct0_T *out)
 {
-    int i;
+    uint16_t i;
     out->EncInner = in->enc_inner_deg;
     out->EncOuter = in->enc_outer_deg;
     for (i = 0; i < 3; ++i) {
@@ -21,7 +23,7 @@ static void position_observation(const control_loop_observation_t *in,
 static void position_parameters(const control_loop_parameters_t *in,
                                 struct1_T *out)
 {
-    int i;
+    uint16_t i;
     out->AverageEncInner = in->average_enc_inner_deg;
     out->AverageEncOuter = in->average_enc_outer_deg;
     for (i = 0; i < 3; ++i) {
@@ -52,7 +54,7 @@ static void position_parameters(const control_loop_parameters_t *in,
 
 void control_loop_position_step(const control_loop_observation_t *observation,
                                 const control_loop_parameters_t *parameters,
-                                unsigned char reset,
+                                uint16_t reset,
                                 double actuator[2])
 {
     struct0_T generated_observation;
@@ -62,7 +64,7 @@ void control_loop_position_step(const control_loop_observation_t *observation,
     position_observation(observation, &generated_observation);
     position_parameters(parameters, &generated_parameters);
     callNextStepGimbalPosition(&generated_observation, &generated_parameters,
-                               (boolean_T)(reset != 0U), &generated_output);
+                               (bool)(reset != 0U), &generated_output);
     actuator[0] = generated_output.ActuationOut[0];
     actuator[1] = generated_output.ActuationOut[1];
 }

@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalVelocity.h
  *
@@ -21,7 +22,7 @@ extern "C" {
 /* Function Declarations */
 extern void callNextStepGimbalVelocity(const struct0_T *ObservationStruct,
                                        const struct1_T *InitStruct,
-                                       boolean_T ResetFlag,
+                                       bool ResetFlag,
                                        struct3_T *OutStruct);
 
 void callNextStepGimbalVelocity_init(void);

@@ -1,7 +1,7 @@
 #ifndef CONTROL_LOOP_H
 #define CONTROL_LOOP_H
 
-#include "DSP2833x_Device.h"
+#include <stdint.h>
 
 /* Application-facing interface for the generated position and velocity loops. */
 
@@ -47,7 +47,7 @@ typedef struct
 
 typedef struct
 {
-    Uint16 pwm_duty[2];       /* converted H-bridge duty: 0 .. 100 % */
+    uint16_t pwm_duty[2];     /* converted H-bridge duty: 0 .. 100 % */
 } control_loop_output_t;
 
 typedef enum
@@ -69,15 +69,15 @@ void control_loop_output(control_loop_output_t *output);
 control_loop_parameters_t *control_loop_parameters(void);
 
 /* Run one step using the stored input and selected controller mode. */
-void control_loop_run(control_loop_mode_t mode, unsigned char reset);
+void control_loop_run(control_loop_mode_t mode, uint16_t reset);
 
 void control_loop_position_step(const control_loop_observation_t *observation,
                                 const control_loop_parameters_t *parameters,
-                                unsigned char reset,
+                                uint16_t reset,
                                 double actuator[2]);
 void control_loop_velocity_step(const control_loop_observation_t *observation,
                                 const control_loop_parameters_t *parameters,
-                                unsigned char reset,
+                                uint16_t reset,
                                 double actuator[2]);
 
 #endif

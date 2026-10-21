@@ -1,17 +1,18 @@
+#include <stdint.h>
 #include "motor_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
 volatile motor_t motor1 = { MOTOR_IDLE, 0U, MOTOR_TEST_CENTER };
 volatile motor_t motor2 = { MOTOR_IDLE, 0U, MOTOR_TEST_CENTER };
-volatile Uint16 motor_test_rst_ab;
-volatile Uint16 motor_test_fault;
-volatile Uint16 motor_test_otw;
+volatile uint16_t motor_test_rst_ab;
+volatile uint16_t motor_test_fault;
+volatile uint16_t motor_test_otw;
 
-static Uint32 motor_test_step_tick;
+static uint32_t motor_test_step_tick;
 
-static Uint16 motor_test_map(motor_dir_e dir, Uint16 mag)
+static uint16_t motor_test_map(motor_dir_e dir, uint16_t mag)
 {
-    Uint16 delta;
+    uint16_t delta;
 
     if (dir == MOTOR_IDLE)
     {
@@ -19,19 +20,19 @@ static Uint16 motor_test_map(motor_dir_e dir, Uint16 mag)
     }
 
     /* 0 -> 0, 1 -> 1, 100 -> 50 so FORWARD 100 = 100% PWM. */
-    delta = (Uint16)(((Uint32)mag * 50UL + 50UL) / 100UL);
+    delta = (uint16_t)(((uint32_t)mag * 50UL + 50UL) / 100UL);
     if (delta > 50U)
     {
         delta = 50U;
     }
     if (dir == MOTOR_FORWARD)
     {
-        return (Uint16)(MOTOR_TEST_CENTER + delta);
+        return (uint16_t)(MOTOR_TEST_CENTER + delta);
     }
-    return (Uint16)(MOTOR_TEST_CENTER - delta);
+    return (uint16_t)(MOTOR_TEST_CENTER - delta);
 }
 
-static Uint16 motor_test_slew(Uint16 now, Uint16 tgt)
+static uint16_t motor_test_slew(uint16_t now, uint16_t tgt)
 {
     if (now == tgt)
     {
@@ -39,14 +40,14 @@ static Uint16 motor_test_slew(Uint16 now, Uint16 tgt)
     }
     if (now < tgt)
     {
-        now = (Uint16)(now + MOTOR_TEST_STEP);
+        now = (uint16_t)(now + MOTOR_TEST_STEP);
         if (now > tgt)
         {
             now = tgt;
         }
         return now;
     }
-    now = (Uint16)(now - MOTOR_TEST_STEP);
+    now = (uint16_t)(now - MOTOR_TEST_STEP);
     if (now < tgt)
     {
         now = tgt;
@@ -72,7 +73,7 @@ static void motor_test_hiz_motor1(void)
 
 static void motor1_update(void)
 {
-    Uint16 tgt;
+    uint16_t tgt;
 
     tgt = motor_test_map(motor1.dir, motor1.duty);
 
@@ -104,7 +105,7 @@ static void motor2_update(void)
 
 void motor_test(void)
 {
-    Uint32 now;
+    uint32_t now;
 
     motor_test_fault = drive_fault();
     motor_test_otw = drive_otw();

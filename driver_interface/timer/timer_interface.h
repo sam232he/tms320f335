@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef TIMER_INTERFACE_H
 #define TIMER_INTERFACE_H
 
@@ -24,6 +25,6 @@
 #endif
 
 void timer_init(void);
-Uint32 timer_tick(void);            /* 1 ms count */
+uint32_t timer_tick(void);            /* 1 ms count */
 
 #endif /* TIMER_INTERFACE_H */

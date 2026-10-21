@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalVelocity_data.c
  *
@@ -9,7 +10,7 @@
 #include "callNextStepGimbalVelocity_data.h"
 
 /* Variable Definitions */
-boolean_T isInitialized_callNextStepGimbalVelocity = false;
+bool isInitialized_callNextStepGimbalVelocity = false;
 
 /*
  * File trailer for callNextStepGimbalVelocity_data.c

@@ -19,7 +19,7 @@
  * ================================================================== Abstract:
  *  Initialize rtInf needed by the generated code.
  */
-real_T rtGetInf(void)
+double rtGetInf(void)
 {
   return rtInf;
 }
@@ -29,7 +29,7 @@ real_T rtGetInf(void)
  * ================================================================= Abstract:
  *  Initialize rtInfF needed by the generated code.
  */
-real32_T rtGetInfF(void)
+float rtGetInfF(void)
 {
   return rtInfF;
 }
@@ -39,7 +39,7 @@ real32_T rtGetInfF(void)
  * ============================================================= Abstract:
  *  Initialize rtMinusInf needed by the generated code.
  */
-real_T rtGetMinusInf(void)
+double rtGetMinusInf(void)
 {
   return rtMinusInf;
 }
@@ -49,7 +49,7 @@ real_T rtGetMinusInf(void)
  * ============================================================ Abstract:
  *  Initialize rtMinusInfF needed by the generated code.
  */
-real32_T rtGetMinusInfF(void)
+float rtGetMinusInfF(void)
 {
   return rtMinusInfF;
 }

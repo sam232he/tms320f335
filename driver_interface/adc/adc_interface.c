@@ -1,15 +1,16 @@
+#include <stdint.h>
 #include "adc_interface.h"
 #include "DSP28x_Project.h"
 
 static const adc_ch_t adc_slot_ch[] = { ADC_SLOT_LIST };
-#define ADC_SLOT_COUNT  ((Uint16)(sizeof(adc_slot_ch) / sizeof(adc_slot_ch[0])))
+#define ADC_SLOT_COUNT  ((uint16_t)(sizeof(adc_slot_ch) / sizeof(adc_slot_ch[0])))
 #define ADC_SLOT_MAX    16U     /* cascaded SEQ: A0-A7 + B0-B7 */
 
-static volatile Uint16 adc_result[sizeof(adc_slot_ch) / sizeof(adc_slot_ch[0])];
+static volatile uint16_t adc_result[sizeof(adc_slot_ch) / sizeof(adc_slot_ch[0])];
 
-static Uint16 adc_n_slots(void)
+static uint16_t adc_n_slots(void)
 {
-    Uint16 n;
+    uint16_t n;
 
     n = ADC_SLOT_COUNT;
     if (n < 1U)
@@ -23,15 +24,15 @@ static Uint16 adc_n_slots(void)
     return n;
 }
 
-static void adc_write_conv(Uint16 index, Uint16 ch)
+static void adc_write_conv(uint16_t index, uint16_t ch)
 {
-    Uint16 shift;
-    Uint16 mask;
-    Uint16 field;
+    uint16_t shift;
+    uint16_t mask;
+    uint16_t field;
 
-    shift = (Uint16)((index & 3U) * 4U);
-    mask = (Uint16)(0x000FU << shift);
-    field = (Uint16)((ch & 0x000FU) << shift);
+    shift = (uint16_t)((index & 3U) * 4U);
+    mask = (uint16_t)(0x000FU << shift);
+    field = (uint16_t)((ch & 0x000FU) << shift);
 
     if (index < 4U)
     {
@@ -53,8 +54,8 @@ static void adc_write_conv(Uint16 index, Uint16 ch)
 
 interrupt void adc_seq1_isr(void)
 {
-    Uint16 i;
-    Uint16 n;
+    uint16_t i;
+    uint16_t n;
 
     n = adc_n_slots();
     for (i = 0U; i < n; i++)
@@ -69,8 +70,8 @@ interrupt void adc_seq1_isr(void)
 
 void adc_init(void)
 {
-    Uint16 i;
-    Uint16 n;
+    uint16_t i;
+    uint16_t n;
 
     n = adc_n_slots();
 
@@ -91,9 +92,9 @@ void adc_init(void)
 
     for (i = 0U; i < n; i++)
     {
-        adc_write_conv(i, (Uint16)adc_slot_ch[i]);
+        adc_write_conv(i, (uint16_t)adc_slot_ch[i]);
     }
-    AdcRegs.ADCMAXCONV.bit.MAX_CONV1 = (Uint16)(n - 1U);
+    AdcRegs.ADCMAXCONV.bit.MAX_CONV1 = (uint16_t)(n - 1U);
 
     AdcRegs.ADCTRL2.bit.EPWM_SOCA_SEQ1 = 1;
     AdcRegs.ADCTRL2.bit.INT_ENA_SEQ1 = 1;
@@ -110,10 +111,10 @@ void adc_init(void)
     IER |= M_INT1;
 }
 
-Uint16 adc_read(adc_ch_t ch)
+uint16_t adc_read(adc_ch_t ch)
 {
-    Uint16 i;
-    Uint16 n;
+    uint16_t i;
+    uint16_t n;
 
     n = adc_n_slots();
     for (i = 0U; i < n; i++)
@@ -126,7 +127,7 @@ Uint16 adc_read(adc_ch_t ch)
     return 0U;
 }
 
-float adc_pin_voltage(Uint16 adc_code)
+float adc_pin_voltage(uint16_t adc_code)
 {
     /*
      * Board-level ADC scale only (drive.md): 0 V .. 3 V, 12-bit.

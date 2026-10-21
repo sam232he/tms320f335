@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef GPIO_INTERFACE_H
 #define GPIO_INTERFACE_H
 
@@ -15,8 +16,8 @@
 #define GPIO_TEST_COUNT             GPIO_LED_COUNT
 
 void gpio_init(void);
-void gpio_write(Uint16 pin, Uint16 level);
-void gpio_toggle(Uint16 pin);
-Uint16 gpio_read(Uint16 pin);
+void gpio_write(uint16_t pin, uint16_t level);
+void gpio_toggle(uint16_t pin);
+uint16_t gpio_read(uint16_t pin);
 
 #endif /* GPIO_INTERFACE_H */

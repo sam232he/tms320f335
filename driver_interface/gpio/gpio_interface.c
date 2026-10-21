@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "gpio_interface.h"
 #include "sci_interface.h"
 #include "i2c_interface.h"
@@ -27,12 +28,12 @@
 
 typedef struct
 {
-    Uint16 pin;         /* GPIO0 .. GPIO87 */
-    Uint16 mux;         /* GPIO_MUX_GPIO or GPIO_MUX_PERIPH1/2/3 */
-    Uint16 direction;   /* GPIO_DIR_INPUT or GPIO_DIR_OUTPUT */
-    Uint16 pullup;      /* GPIO_PULLUP_ENABLE or GPIO_PULLUP_DISABLE */
-    Uint16 out_level;   /* initial latch value when configured as output */
-    Uint16 qual;        /* input qualification (ports A and B only) */
+    uint16_t pin;         /* GPIO0 .. GPIO87 */
+    uint16_t mux;         /* GPIO_MUX_GPIO or GPIO_MUX_PERIPH1/2/3 */
+    uint16_t direction;   /* GPIO_DIR_INPUT or GPIO_DIR_OUTPUT */
+    uint16_t pullup;      /* GPIO_PULLUP_ENABLE or GPIO_PULLUP_DISABLE */
+    uint16_t out_level;   /* initial latch value when configured as output */
+    uint16_t qual;        /* input qualification (ports A and B only) */
 } gpio_pin_cfg_t;
 
 /*
@@ -96,11 +97,11 @@ static const gpio_pin_cfg_t gpio_pin_table[] =
     { I2C_A_PIN_WP,  GPIO_MUX_GPIO, GPIO_DIR_OUTPUT, GPIO_PULLUP_DISABLE, GPIO_LEVEL_LOW, GPIO_QUAL_SYNC  }
 };
 
-static void gpio_apply_dir_pud_latch(volatile Uint32 *dir,
-                                     volatile Uint32 *pud,
-                                     volatile Uint32 *set,
-                                     volatile Uint32 *clr,
-                                     Uint32 mask,
+static void gpio_apply_dir_pud_latch(volatile uint32_t *dir,
+                                     volatile uint32_t *pud,
+                                     volatile uint32_t *set,
+                                     volatile uint32_t *clr,
+                                     uint32_t mask,
                                      const gpio_pin_cfg_t *cfg)
 {
     /*
@@ -140,93 +141,93 @@ static void gpio_apply_dir_pud_latch(volatile Uint32 *dir,
 
 static void gpio_apply_pin(const gpio_pin_cfg_t *cfg)
 {
-    Uint32 data_mask;
-    Uint32 mux_mask;
-    Uint16 mux_shift;
-    Uint16 bit;
+    uint32_t data_mask;
+    uint32_t mux_mask;
+    uint16_t mux_shift;
+    uint16_t bit;
 
     if (cfg->pin <= 15U)
     {
         bit = cfg->pin;
-        mux_shift = (Uint16)(bit * 2U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << bit;
 
         GpioCtrlRegs.GPAMUX1.all = (GpioCtrlRegs.GPAMUX1.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         GpioCtrlRegs.GPAQSEL1.all = (GpioCtrlRegs.GPAQSEL1.all & ~mux_mask) |
-                                    (((Uint32)cfg->qual << mux_shift) & mux_mask);
+                                    (((uint32_t)cfg->qual << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPADIR.all, &GpioCtrlRegs.GPAPUD.all,
                                  &GpioDataRegs.GPASET.all, &GpioDataRegs.GPACLEAR.all,
                                  data_mask, cfg);
     }
     else if (cfg->pin <= 31U)
     {
-        bit = (Uint16)(cfg->pin - 16U);
-        mux_shift = (Uint16)(bit * 2U);
+        bit = (uint16_t)(cfg->pin - 16U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << cfg->pin;
 
         GpioCtrlRegs.GPAMUX2.all = (GpioCtrlRegs.GPAMUX2.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         GpioCtrlRegs.GPAQSEL2.all = (GpioCtrlRegs.GPAQSEL2.all & ~mux_mask) |
-                                    (((Uint32)cfg->qual << mux_shift) & mux_mask);
+                                    (((uint32_t)cfg->qual << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPADIR.all, &GpioCtrlRegs.GPAPUD.all,
                                  &GpioDataRegs.GPASET.all, &GpioDataRegs.GPACLEAR.all,
                                  data_mask, cfg);
     }
     else if (cfg->pin <= 47U)
     {
-        bit = (Uint16)(cfg->pin - 32U);
-        mux_shift = (Uint16)(bit * 2U);
+        bit = (uint16_t)(cfg->pin - 32U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << bit;
 
         GpioCtrlRegs.GPBMUX1.all = (GpioCtrlRegs.GPBMUX1.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         GpioCtrlRegs.GPBQSEL1.all = (GpioCtrlRegs.GPBQSEL1.all & ~mux_mask) |
-                                    (((Uint32)cfg->qual << mux_shift) & mux_mask);
+                                    (((uint32_t)cfg->qual << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPBDIR.all, &GpioCtrlRegs.GPBPUD.all,
                                  &GpioDataRegs.GPBSET.all, &GpioDataRegs.GPBCLEAR.all,
                                  data_mask, cfg);
     }
     else if (cfg->pin <= 63U)
     {
-        bit = (Uint16)(cfg->pin - 48U);
-        mux_shift = (Uint16)(bit * 2U);
+        bit = (uint16_t)(cfg->pin - 48U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << (cfg->pin - 32U);
 
         GpioCtrlRegs.GPBMUX2.all = (GpioCtrlRegs.GPBMUX2.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         GpioCtrlRegs.GPBQSEL2.all = (GpioCtrlRegs.GPBQSEL2.all & ~mux_mask) |
-                                    (((Uint32)cfg->qual << mux_shift) & mux_mask);
+                                    (((uint32_t)cfg->qual << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPBDIR.all, &GpioCtrlRegs.GPBPUD.all,
                                  &GpioDataRegs.GPBSET.all, &GpioDataRegs.GPBCLEAR.all,
                                  data_mask, cfg);
     }
     else if (cfg->pin <= 79U)
     {
-        bit = (Uint16)(cfg->pin - 64U);
-        mux_shift = (Uint16)(bit * 2U);
+        bit = (uint16_t)(cfg->pin - 64U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << bit;
 
         GpioCtrlRegs.GPCMUX1.all = (GpioCtrlRegs.GPCMUX1.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPCDIR.all, &GpioCtrlRegs.GPCPUD.all,
                                  &GpioDataRegs.GPCSET.all, &GpioDataRegs.GPCCLEAR.all,
                                  data_mask, cfg);
     }
     else if (cfg->pin <= 87U)
     {
-        bit = (Uint16)(cfg->pin - 80U);
-        mux_shift = (Uint16)(bit * 2U);
+        bit = (uint16_t)(cfg->pin - 80U);
+        mux_shift = (uint16_t)(bit * 2U);
         mux_mask = 3UL << mux_shift;
         data_mask = 1UL << (cfg->pin - 64U);
 
         GpioCtrlRegs.GPCMUX2.all = (GpioCtrlRegs.GPCMUX2.all & ~mux_mask) |
-                                   (((Uint32)cfg->mux << mux_shift) & mux_mask);
+                                   (((uint32_t)cfg->mux << mux_shift) & mux_mask);
         gpio_apply_dir_pud_latch(&GpioCtrlRegs.GPCDIR.all, &GpioCtrlRegs.GPCPUD.all,
                                  &GpioDataRegs.GPCSET.all, &GpioDataRegs.GPCCLEAR.all,
                                  data_mask, cfg);
@@ -260,9 +261,9 @@ static void gpio_init_defaults(void)
     EDIS;
 }
 
-void gpio_write(Uint16 pin, Uint16 level)
+void gpio_write(uint16_t pin, uint16_t level)
 {
-    Uint32 mask;
+    uint32_t mask;
 
     if (pin <= 31U)
     {
@@ -302,7 +303,7 @@ void gpio_write(Uint16 pin, Uint16 level)
     }
 }
 
-void gpio_toggle(Uint16 pin)
+void gpio_toggle(uint16_t pin)
 {
     if (pin <= 31U)
     {
@@ -318,31 +319,31 @@ void gpio_toggle(Uint16 pin)
     }
 }
 
-Uint16 gpio_read(Uint16 pin)
+uint16_t gpio_read(uint16_t pin)
 {
     if (pin <= 31U)
     {
-        return (Uint16)((GpioDataRegs.GPADAT.all >> pin) & 1UL);
+        return (uint16_t)((GpioDataRegs.GPADAT.all >> pin) & 1UL);
     }
     if (pin <= 63U)
     {
-        return (Uint16)((GpioDataRegs.GPBDAT.all >> (pin - 32U)) & 1UL);
+        return (uint16_t)((GpioDataRegs.GPBDAT.all >> (pin - 32U)) & 1UL);
     }
     if (pin <= 87U)
     {
-        return (Uint16)((GpioDataRegs.GPCDAT.all >> (pin - 64U)) & 1UL);
+        return (uint16_t)((GpioDataRegs.GPCDAT.all >> (pin - 64U)) & 1UL);
     }
     return 0U;
 }
 
 void gpio_init(void)
 {
-    Uint16 i;
+    uint16_t i;
 
     gpio_init_defaults();
 
     EALLOW;
-    for (i = 0U; i < (Uint16)(sizeof(gpio_pin_table) / sizeof(gpio_pin_table[0])); i++)
+    for (i = 0U; i < (uint16_t)(sizeof(gpio_pin_table) / sizeof(gpio_pin_table[0])); i++)
     {
         gpio_apply_pin(&gpio_pin_table[i]);
     }

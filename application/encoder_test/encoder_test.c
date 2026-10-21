@@ -1,14 +1,15 @@
+#include <stdint.h>
 #include "encoder_test.h"
 #include "../../driver_interface/timer/timer_interface.h"
 
-static Uint32 encoder_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
+static uint32_t encoder_test_last_tick = 0UL;   /* COFF: .ebss is not zeroed */
 
-volatile Uint32 enc1_counts;
-volatile Uint32 enc2_counts;
+volatile uint32_t enc1_counts;
+volatile uint32_t enc2_counts;
 
 void encoder_test(void)
 {
-    Uint32 now;
+    uint32_t now;
 
     now = timer_tick();
     if ((now - encoder_test_last_tick) < 10UL) /* 10 ms */

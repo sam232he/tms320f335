@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "init_interface.h"
 #include "gpio_interface.h"
 #include "can_interface.h"
@@ -16,7 +17,7 @@ void system_init(void)
 {
     InitSysCtrl();
 
-    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (Uint32)&RamfuncsLoadSize);
+    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (uint32_t)&RamfuncsLoadSize);
     InitFlash();
 
     DINT;

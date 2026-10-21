@@ -1,3 +1,4 @@
+#include <stdbool.h>
 /*
  * File: callNextStepGimbalPosition_data.c
  *
@@ -10,7 +11,7 @@
 #include "rt_nonfinite.h"
 
 /* Variable Definitions */
-boolean_T isInitialized_callNextStepGimbalPosition = false;
+bool isInitialized_callNextStepGimbalPosition = false;
 
 /*
  * File trailer for callNextStepGimbalPosition_data.c

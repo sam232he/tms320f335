@@ -1,14 +1,15 @@
+#include <stdint.h>
 #include "eeprom_interface.h"
 #include "gpio_interface.h"
 
-static Uint16 eeprom_slave(void)
+static uint16_t eeprom_slave(void)
 {
-    return (Uint16)(I2C_EEPROM_ADDR | ((gpio_read(I2C_A_PIN_A1) & 1U) << 1));
+    return (uint16_t)(I2C_EEPROM_ADDR | ((gpio_read(I2C_A_PIN_A1) & 1U) << 1));
 }
 
-static Uint16 eeprom_range_ok(Uint16 addr, Uint16 n)
+static uint16_t eeprom_range_ok(uint16_t addr, uint16_t n)
 {
-    Uint16 last;
+    uint16_t last;
 
     if ((n == 0U) || (n > I2C_MAX_BYTES))
     {
@@ -18,7 +19,7 @@ static Uint16 eeprom_range_ok(Uint16 addr, Uint16 n)
     {
         return 0U;
     }
-    last = (Uint16)(addr + n - 1U);
+    last = (uint16_t)(addr + n - 1U);
     if (last < addr)
     {
         return 0U;  /* 16-bit wrap */
@@ -30,11 +31,11 @@ static Uint16 eeprom_range_ok(Uint16 addr, Uint16 n)
     return 1U;
 }
 
-static Uint16 eeprom_same_page(Uint16 addr, Uint16 n)
+static uint16_t eeprom_same_page(uint16_t addr, uint16_t n)
 {
-    Uint16 last;
+    uint16_t last;
 
-    last = (Uint16)(addr + n - 1U);
+    last = (uint16_t)(addr + n - 1U);
     return ((addr & EEPROM_PAGE_MASK) == (last & EEPROM_PAGE_MASK)) ? 1U : 0U;
 }
 
@@ -44,15 +45,15 @@ void eeprom_init(void)
     gpio_write(I2C_A_PIN_WP, 0U);
 }
 
-void eeprom_write_protect(Uint16 enable)
+void eeprom_write_protect(uint16_t enable)
 {
     gpio_write(I2C_A_PIN_WP, (enable != 0U) ? 1U : 0U);
 }
 
-Uint16 eeprom_write(Uint16 addr, const Uint16 *data, Uint16 n)
+uint16_t eeprom_write(uint16_t addr, const uint16_t *data, uint16_t n)
 {
     i2c_msg_t msg;
-    Uint16 i;
+    uint16_t i;
 
     if (data == 0)
     {
@@ -82,10 +83,10 @@ Uint16 eeprom_write(Uint16 addr, const Uint16 *data, Uint16 n)
     return i2c_tx(I2C_A, &msg);
 }
 
-Uint16 eeprom_read(Uint16 addr, Uint16 n)
+uint16_t eeprom_read(uint16_t addr, uint16_t n)
 {
     i2c_msg_t msg;
-    Uint16 i;
+    uint16_t i;
 
     if (eeprom_range_ok(addr, n) == 0U)
     {
@@ -103,11 +104,11 @@ Uint16 eeprom_read(Uint16 addr, Uint16 n)
     return i2c_tx(I2C_A, &msg);
 }
 
-Uint16 eeprom_rx(Uint16 *data, Uint16 n)
+uint16_t eeprom_rx(uint16_t *data, uint16_t n)
 {
     i2c_msg_t msg;
-    Uint16 i;
-    Uint16 copy_n;
+    uint16_t i;
+    uint16_t copy_n;
 
     if (data == 0)
     {

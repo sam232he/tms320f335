@@ -68,6 +68,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/ControlLoop"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/control_command"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.973169149" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>
@@ -171,6 +172,7 @@
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/encoder_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/motor_test"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/ControlLoop"/>
+									<listOptionValue builtIn="false" value="${PROJECT_ROOT}/application/control_command"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.955945298" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.ABI.coffabi" valueType="enumerated"/>
